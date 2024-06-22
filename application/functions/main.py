@@ -14,4 +14,12 @@ initialize_app()
 #
 @https_fn.on_request()
 def on_request_example(req: https_fn.Request) -> https_fn.Response:
-    return https_fn.Response("bussDown")
+    return https_fn.Response("hello world")
+
+@https_fn.on_call()
+def test(req: https_fn.CallableRequest) -> https_fn.Response:
+    """Saves a message to the Firebase Realtime Database but sanitizes the text
+    by removing swear words."""
+    text = req.data["text"]
+    response = f"Response: {text} is what you sent"
+    return {"response": response}

@@ -1,14 +1,18 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList, KeyboardAvoidingView, Platform, Image, StatusBar } from 'react-native';
 import ChipIcon from '../constants/icon'
+import firebase from '@react-native-firebase/app';
+import { getFunctions, httpsCallable } from "firebase/functions";
 
 const chip = ChipIcon.chip;
+const functions = getFunctions();
+const test = httpsCallable(functions, 'test');
 
 const ChatScreen = () => {
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (inputText.trim().length > 0) {
       const newMessage = {
         id: messages.length.toString(),
@@ -16,6 +20,30 @@ const ChatScreen = () => {
         user: 'user',
       };
       setMessages([newMessage, ...messages]);
+
+      try {
+        // Call the Firebase Cloud Function
+        test({ text: inputText })
+          .then((result) => {
+          // Create a new message object for the response
+            const newBotMessage = {
+              id: (messages.length + 1).toString(),
+              text: result.data.response, // Assuming the function returns an object with a 'response' field
+              user: 'ai',
+            };
+            // Add the bot's response to the messages
+            setMessages([newBotMessage, ...messages]);
+          });
+      } catch (error) {
+        console.error('Error calling Firebase function:', error);
+        // Optionally, you can add an error message to the chat
+        const errorMessage = {
+          id: (messages.length + 1).toString(),
+          text: 'Sorry, there was an error processing your request.',
+          user: 'ai',
+        };
+        setMessages(prevMessages => [errorMessage, ...prevMessages]);
+      }
       setInputText('');
     }
   };
