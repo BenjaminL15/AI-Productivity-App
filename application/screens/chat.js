@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList, KeyboardAvoidingView, Platform, Image, StatusBar } from 'react-native';
 import ChipIcon from '../constants/icon'
-import firebase from '@react-native-firebase/app';
 import { getFunctions, httpsCallable } from "firebase/functions";
 
 const chip = ChipIcon.chip;
-const functions = getFunctions();
-const test = httpsCallable(functions, 'test');
 
-const ChatScreen = () => {
+
+const ChatScreen = ({firebaseApp}) => {
+  const functions = getFunctions(firebaseApp);
+  const test = httpsCallable(functions, 'test');
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
 
@@ -68,7 +68,7 @@ const ChatScreen = () => {
         renderItem={renderMessage}
         keyExtractor={(item) => item.id}
         inverted
-        contentContainerStyle={{ flexDirection: 'column' }}
+        contentContainerStyle={{ flexDirection: 'column-reverse' }}
       />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}

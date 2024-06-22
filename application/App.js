@@ -30,7 +30,7 @@ const analytics = getAnalytics(app);
 const App = () => {
   return (
     <View style={styles.container}>
-      <ChatScreen />
+      <ChatScreen firebaseApp={app}/>
     </View>
   );
 };
