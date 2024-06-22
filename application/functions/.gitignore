@@ -1,0 +1,4 @@
+*.local
+venv/*
+secret.json
+*.log
