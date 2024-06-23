@@ -32,7 +32,7 @@ const ChatScreen = ({firebaseApp}) => {
               user: 'ai',
             };
             // Add the bot's response to the messages
-            setMessages([newBotMessage, ...messages]);
+            setMessages((prevMessages) =>[newBotMessage, ...prevMessages]);
           });
       } catch (error) {
         console.error('Error calling Firebase function:', error);
@@ -68,7 +68,7 @@ const ChatScreen = ({firebaseApp}) => {
         renderItem={renderMessage}
         keyExtractor={(item) => item.id}
         inverted
-        contentContainerStyle={{ flexDirection: 'column-reverse' }}
+        contentContainerStyle={{ flexDirection: 'column' }}
       />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
