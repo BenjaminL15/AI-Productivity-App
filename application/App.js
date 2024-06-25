@@ -2,6 +2,8 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import ChatScreen from '../application/screens/chat'; 
+import WelcomeScreen from '../application/screens/welcome';
+import TaskStart from '../application/screens/taskStart';
 
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
@@ -30,7 +32,9 @@ const analytics = getAnalytics(app);
 const App = () => {
   return (
     <View style={styles.container}>
-      <ChatScreen firebaseApp={app}/>
+      {/* <ChatScreen firebaseApp={app}/> */}
+      {/* <WelcomeScreen /> */}
+      <TaskStart />
     </View>
   );
 };

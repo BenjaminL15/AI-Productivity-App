@@ -1,0 +1,77 @@
+[debug] [2024-06-25T17:18:52.915Z] ----------------------------------------------------------------------
+[debug] [2024-06-25T17:18:52.917Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\sfw7sg\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy --only functions
+[debug] [2024-06-25T17:18:52.917Z] CLI Version:   13.11.4
+[debug] [2024-06-25T17:18:52.917Z] Platform:      win32
+[debug] [2024-06-25T17:18:52.917Z] Node Version:  v20.14.0
+[debug] [2024-06-25T17:18:52.917Z] Time:          Tue Jun 25 2024 13:18:52 GMT-0400 (Eastern Daylight Time)
+[debug] [2024-06-25T17:18:52.917Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2024-06-25T17:18:52.955Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2024-06-25T17:18:52.956Z] > authorizing via signed-in user (sfw7sg@virginia.edu)
+[debug] [2024-06-25T17:18:52.956Z] [iam] checking project project-f6f0e for permissions ["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]
+[debug] [2024-06-25T17:18:52.957Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/project-f6f0e:testIamPermissions [none]
+[debug] [2024-06-25T17:18:52.957Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/project-f6f0e:testIamPermissions x-goog-quota-user=projects/project-f6f0e
+[debug] [2024-06-25T17:18:52.957Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/project-f6f0e:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2024-06-25T17:18:53.126Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/project-f6f0e:testIamPermissions 200
+[debug] [2024-06-25T17:18:53.126Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/project-f6f0e:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2024-06-25T17:18:53.127Z] >>> [apiv2][query] POST https://iam.googleapis.com/v1/projects/project-f6f0e/serviceAccounts/project-f6f0e@appspot.gserviceaccount.com:testIamPermissions [none]
+[debug] [2024-06-25T17:18:53.127Z] >>> [apiv2][body] POST https://iam.googleapis.com/v1/projects/project-f6f0e/serviceAccounts/project-f6f0e@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[debug] [2024-06-25T17:18:53.212Z] <<< [apiv2][status] POST https://iam.googleapis.com/v1/projects/project-f6f0e/serviceAccounts/project-f6f0e@appspot.gserviceaccount.com:testIamPermissions 200
+[debug] [2024-06-25T17:18:53.212Z] <<< [apiv2][body] POST https://iam.googleapis.com/v1/projects/project-f6f0e/serviceAccounts/project-f6f0e@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[info] 
+[info] === Deploying to 'project-f6f0e'...
+[info] 
+[info] i  deploying functions 
+[debug] [2024-06-25T17:18:53.215Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/project-f6f0e [none]
+[debug] [2024-06-25T17:18:53.571Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/project-f6f0e 200
+[debug] [2024-06-25T17:18:53.571Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/project-f6f0e {"projectId":"project-f6f0e","projectNumber":"843684034294","displayName":"project","name":"projects/project-f6f0e","resources":{"hostingSite":"project-f6f0e"},"state":"ACTIVE","etag":"1_1bfb342c-ace5-4e7a-9eb0-b8ddf4399d50"}
+[info] i  functions: preparing codebase default for deployment 
+[info] i  functions: ensuring required API cloudfunctions.googleapis.com is enabled... 
+[info] i  functions: ensuring required API cloudbuild.googleapis.com is enabled... 
+[info] i  artifactregistry: ensuring required API artifactregistry.googleapis.com is enabled... 
+[debug] [2024-06-25T17:18:53.573Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/project-f6f0e/services/cloudfunctions.googleapis.com [none]
+[debug] [2024-06-25T17:18:53.573Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/project-f6f0e/services/cloudfunctions.googleapis.com x-goog-quota-user=projects/project-f6f0e
+[debug] [2024-06-25T17:18:53.574Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/project-f6f0e/services/runtimeconfig.googleapis.com [none]
+[debug] [2024-06-25T17:18:53.574Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/project-f6f0e/services/runtimeconfig.googleapis.com x-goog-quota-user=projects/project-f6f0e
+[debug] [2024-06-25T17:18:53.575Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/project-f6f0e/services/cloudbuild.googleapis.com [none]
+[debug] [2024-06-25T17:18:53.575Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/project-f6f0e/services/cloudbuild.googleapis.com x-goog-quota-user=projects/project-f6f0e
+[debug] [2024-06-25T17:18:53.576Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/project-f6f0e/services/artifactregistry.googleapis.com [none]
+[debug] [2024-06-25T17:18:53.576Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/project-f6f0e/services/artifactregistry.googleapis.com x-goog-quota-user=projects/project-f6f0e
+[debug] [2024-06-25T17:18:53.834Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/project-f6f0e/services/runtimeconfig.googleapis.com 200
+[debug] [2024-06-25T17:18:53.834Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/project-f6f0e/services/runtimeconfig.googleapis.com [omitted]
+[debug] [2024-06-25T17:18:53.884Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/project-f6f0e/services/cloudfunctions.googleapis.com 200
+[debug] [2024-06-25T17:18:53.884Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/project-f6f0e/services/cloudfunctions.googleapis.com [omitted]
+[info] +  functions: required API cloudfunctions.googleapis.com is enabled 
+[debug] [2024-06-25T17:18:53.892Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/project-f6f0e/services/cloudbuild.googleapis.com 200
+[debug] [2024-06-25T17:18:53.893Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/project-f6f0e/services/cloudbuild.googleapis.com [omitted]
+[info] +  functions: required API cloudbuild.googleapis.com is enabled 
+[debug] [2024-06-25T17:18:53.898Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/project-f6f0e/services/artifactregistry.googleapis.com 200
+[debug] [2024-06-25T17:18:53.899Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/project-f6f0e/services/artifactregistry.googleapis.com [omitted]
+[info] +  artifactregistry: required API artifactregistry.googleapis.com is enabled 
+[debug] [2024-06-25T17:18:53.899Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/project-f6f0e/adminSdkConfig [none]
+[debug] [2024-06-25T17:18:54.072Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/project-f6f0e/adminSdkConfig 200
+[debug] [2024-06-25T17:18:54.072Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/project-f6f0e/adminSdkConfig {"projectId":"project-f6f0e","storageBucket":"project-f6f0e.appspot.com"}
+[debug] [2024-06-25T17:18:54.073Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/project-f6f0e/configs [none]
+[debug] [2024-06-25T17:18:54.176Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/project-f6f0e/configs 200
+[debug] [2024-06-25T17:18:54.176Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/project-f6f0e/configs {"configs":[{"name":"projects/project-f6f0e/configs/groq"}]}
+[debug] [2024-06-25T17:18:54.177Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/project-f6f0e/configs/groq/variables [none]
+[debug] [2024-06-25T17:18:54.225Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/project-f6f0e/configs/groq/variables 200
+[debug] [2024-06-25T17:18:54.225Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/project-f6f0e/configs/groq/variables {"variables":[{"name":"projects/project-f6f0e/configs/groq/variables/apikey","updateTime":"2024-06-25T03:17:15.114936206Z"}]}
+[debug] [2024-06-25T17:18:54.225Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/project-f6f0e/configs/groq/variables/apikey [none]
+[debug] [2024-06-25T17:18:54.298Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/project-f6f0e/configs/groq/variables/apikey 200
+[debug] [2024-06-25T17:18:54.299Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/project-f6f0e/configs/groq/variables/apikey {"name":"projects/project-f6f0e/configs/groq/variables/apikey","updateTime":"2024-06-25T03:17:15.114936206Z","text":"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"}
+[debug] [2024-06-25T17:18:54.299Z] Customer code is not Node
+[debug] [2024-06-25T17:18:54.299Z] Validating python source
+[debug] [2024-06-25T17:18:54.300Z] Building python source
+[info] i  functions: Loading and analyzing source code for codebase default to determine what to deploy 
+[debug] [2024-06-25T17:18:54.300Z] Could not find functions.yaml. Must use http discovery
+[debug] [2024-06-25T17:18:54.303Z] Running command with virtualenv: command="C:\Users\sfw7sg\Documents\School Assignments\MobileProject\application\functions\venv\Scripts\activate.bat", args=["","&&","python.exe","-c","\"import firebase_functions; import os; print(os.path.dirname(firebase_functions.__file__))\""]
+[debug] [2024-06-25T17:18:54.311Z] stderr: The system cannot find the path specified.
+
+[debug] [2024-06-25T17:18:54.351Z] Error: spawn "C:\Users\sfw7sg\Documents\School Assignments\MobileProject\application\functions\venv\Scripts\activate.bat" ENOENT
+    at notFoundError (C:\Users\sfw7sg\AppData\Roaming\npm\node_modules\firebase-tools\node_modules\cross-spawn\lib\enoent.js:6:26)
+    at verifyENOENT (C:\Users\sfw7sg\AppData\Roaming\npm\node_modules\firebase-tools\node_modules\cross-spawn\lib\enoent.js:40:16)
+    at cp.emit (C:\Users\sfw7sg\AppData\Roaming\npm\node_modules\firebase-tools\node_modules\cross-spawn\lib\enoent.js:27:25)
+    at ChildProcess._handle.onexit (node:internal/child_process:294:12)
+[error] 
+[error] Error: An unexpected error has occurred.
