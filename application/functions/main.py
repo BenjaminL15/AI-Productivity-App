@@ -12,7 +12,7 @@ from firebase_admin import credentials
 CRED = credentials.Certificate("./secret.json")
 GROQ_API_KEY = StringParam("GROQ_API")
 # firebase_admin.initialize_app(cred)
-client = Groq(api_key=GROQ_API_KEY)
+client = Groq(api_key=GROQ_API_KEY.value)
 
 app = initialize_app()
 
