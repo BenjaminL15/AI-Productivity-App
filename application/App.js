@@ -1,6 +1,8 @@
 // App.js
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator, CardStyleInterpolators } from '@react-navigation/stack';
 import ChatScreen from '../application/screens/chat'; 
 import WelcomeScreen from '../application/screens/welcome';
 import TaskStart from '../application/screens/taskStart';
@@ -29,13 +31,44 @@ const app = initializeApp(firebaseConfig);
 const functions = getFunctions(app);
 const analytics = getAnalytics(app);
 
+const Stack = createStackNavigator();
+
+const verticalSwipeTransition = {
+  gestureDirection: 'vertical',
+  transitionSpec: {
+    open: {
+      animation: 'timing',
+      config: {
+        duration: 300,
+      },
+    },
+    close: {
+      animation: 'timing',
+      config: {
+        duration: 300,
+      },
+    },
+  },
+  cardStyleInterpolator: CardStyleInterpolators.forVerticalIOS,
+};
+
 const App = () => {
   return (
-    <View style={styles.container}>
-      <ChatScreen firebaseApp={app}/>
-      {/* <WelcomeScreen /> */}
-      {/* <TaskStart /> */}
-    </View>
+    <NavigationContainer>
+      <Stack.Navigator>
+        <Stack.Screen name="Welcome" component={WelcomeScreen} options={{headerShown: false}}/>
+        <Stack.Screen name="TaskStart" component={TaskStart} options={{headerShown: false }} />
+        <Stack.Screen 
+          name="Chat" 
+          component={ChatScreen} 
+          initialParams={{ firebaseApp: app }} 
+          options={{ 
+            ...verticalSwipeTransition,
+            headerShown: false 
+          }} 
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 };
 

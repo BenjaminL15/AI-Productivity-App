@@ -1,8 +1,10 @@
 import React, {useState, useEffect } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 
-const taskStart = () => {
+const TaskStart = () => {
+    const navigation = useNavigation();
     const [displayedText, setDisplayedText] = useState('');
     const [showCursor, setShowCursor] = useState(true);
     const exampleTasks = [
@@ -39,6 +41,10 @@ const taskStart = () => {
       };
     }, [currentTaskIndex]);
 
+    const handleArrowPress = () => {
+      navigation.navigate('Chat');
+    };
+
     return (
         <View style={styles.container}>
           <View style={styles.menuIcon}>
@@ -51,9 +57,9 @@ const taskStart = () => {
             {displayedText}
             {showCursor && <Text>|</Text>}
         </Text>
-          <View style={styles.arrowContainer}>
+          <TouchableOpacity style={styles.arrowContainer} onPress={handleArrowPress}>
             <AntDesign name="down" size={24} color="#FFA6A6" />
-          </View>
+          </TouchableOpacity>
         </View>
       );
     };
@@ -98,4 +104,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default taskStart;
+export default TaskStart;

@@ -1,8 +1,15 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import llama from '../constants/image'
 
-const welcomeScreen = () => {
+const WelcomeScreen = () => {
+  const navigation = useNavigation();
+
+  const handleGetStartedPress = () => {
+    navigation.navigate('TaskStart');
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.welcome}>Welcome!</Text>
@@ -11,7 +18,7 @@ const welcomeScreen = () => {
       <View style={styles.profileContainer}>
         <Text style={styles.profileTagline}>Personal AI assistant to help you chip away tasks!</Text>
         <View style={styles.line}></View>
-        <TouchableOpacity style={styles.button}>
+        <TouchableOpacity style={styles.button} onPress={handleGetStartedPress}>
             <Text style={styles.buttonText}>Get Started!</Text>
         </TouchableOpacity>
       </View>
@@ -86,4 +93,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default welcomeScreen;
+export default WelcomeScreen;

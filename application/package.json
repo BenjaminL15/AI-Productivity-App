@@ -11,6 +11,7 @@
   "dependencies": {
     "@react-native-firebase/app": "^20.1.0",
     "@react-native-firebase/functions": "^20.1.0",
+    "@react-navigation/stack": "^6.3.29",
     "expo": "~51.0.14",
     "expo-status-bar": "~1.12.1",
     "firebase": "^10.12.2",
