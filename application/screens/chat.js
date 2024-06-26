@@ -23,14 +23,15 @@ const ChatScreen = ({firebaseApp}) => {
 
       try {
         // Call the Firebase Cloud Function
-        test({ text: inputText })
+        test({messages: messages, inputText: inputText})
           .then((result) => {
           // Create a new message object for the response
             const newBotMessage = {
               id: (messages.length + 1).toString(),
               text: result.data.response, // Assuming the function returns an object with a 'response' field
-              user: 'ai',
+              user: 'assistant',
             };
+            console.log(messages)
             // Add the bot's response to the messages
             setMessages((prevMessages) =>[newBotMessage, ...prevMessages]);
           });
@@ -40,9 +41,9 @@ const ChatScreen = ({firebaseApp}) => {
         const errorMessage = {
           id: (messages.length + 1).toString(),
           text: 'Sorry, there was an error processing your request.',
-          user: 'ai',
+          user: 'assistant',
         };
-        setMessages(prevMessages => [errorMessage, ...prevMessages]);
+        setMessages((prevMessages) => [errorMessage, ...prevMessages]);
       }
       setInputText('');
     }
