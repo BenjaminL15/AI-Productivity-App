@@ -32,9 +32,9 @@ const analytics = getAnalytics(app);
 const App = () => {
   return (
     <View style={styles.container}>
-      {/* <ChatScreen firebaseApp={app}/> */}
+      <ChatScreen firebaseApp={app}/>
       {/* <WelcomeScreen /> */}
-      <TaskStart />
+      {/* <TaskStart /> */}
     </View>
   );
 };
