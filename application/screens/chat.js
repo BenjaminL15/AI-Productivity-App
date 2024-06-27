@@ -12,22 +12,24 @@ const ChatScreen = ({firebaseApp}) => {
   const test = httpsCallable(functions, 'test');
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
-  const [isModalVisible, setModalVisible] = useState(false);
+  const [isTaskModalVisible, setTaskModalVisible] = useState(false);
+  const [isTimerModalVisible, setTimerModalVisible] = useState(false);
   const [timer, setTimer] = useState(5);
+  const [taskTime, setTaskTime] = useState('');
 
   useEffect(() => {
-    if (isModalVisible && timer > 0) {
+    if (isTimerModalVisible && timer > 0) {
       Timer.setTimeout(this, 'timer', () => {
         setTimer(timer - 1);
       }, 1000);
     } else if (timer === 0) {
-      setModalVisible(false);
+      setTimerModalVisible(false);
       setTimer(5);
     }
     return () => {
       Timer.clearTimeout(this, 'timer');
     };
-  }, [timer, isModalVisible]);
+  }, [timer, isTimerModalVisible]);
 
   const handleSend = async () => {
     if (inputText.trim().length > 0) {
@@ -52,7 +54,8 @@ const ChatScreen = ({firebaseApp}) => {
             // Add the bot's response to the messages
             setMessages((prevMessages) =>[newBotMessage, ...prevMessages]);
             if (result.data.response.toLowerCase().includes('task')) {
-              setModalVisible(true);
+              setTaskTime('1 hour'); 
+              setTaskModalVisible(true);
             }
           });
       } catch (error) {
@@ -67,6 +70,16 @@ const ChatScreen = ({firebaseApp}) => {
       }
       setInputText('');
     }
+  };
+
+  const handleYes = () => {
+    setTaskModalVisible(false);
+    setTimerModalVisible(true);
+  };
+
+  const handleNo = () => {
+    setTaskModalVisible(false);
+    Alert.alert('Task declined.');
   };
 
   const renderMessage = ({ item }) => (
@@ -111,15 +124,38 @@ const ChatScreen = ({firebaseApp}) => {
       </KeyboardAvoidingView>
       <Modal
         transparent={true}
-        visible={isModalVisible}
+        visible={isTaskModalVisible}
         onRequestClose={() => {
           Alert.alert('Modal has been closed.');
-          setModalVisible(!isModalVisible);
+          setTaskModalVisible(!isTaskModalVisible);
         }}
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
             <Text style={styles.modalText}>Task Detected</Text>
+            <Text style={styles.modalTimer}>This task will take {taskTime}</Text>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity onPress={handleYes} style={styles.modalButton}>
+                <Text style={styles.buttonText}>Yes</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleNo} style={styles.modalButton}>
+                <Text style={styles.buttonText}>No</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+      <Modal
+        transparent={true}
+        visible={isTimerModalVisible}
+        onRequestClose={() => {
+          Alert.alert('Modal has been closed.');
+          setTimerModalVisible(!isTimerModalVisible);
+        }}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalText}>Task Accepted</Text>
             <Text style={styles.modalTimer}>Closing in {timer} seconds...</Text>
           </View>
         </View>
@@ -236,6 +272,22 @@ const styles = StyleSheet.create({
   modalTimer: {
     fontSize: 16,
     marginTop: 10,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    marginTop: 20,
+  },
+  modalButton: {
+    flex: 1,
+    marginHorizontal: 10,
+    padding: 10,
+    backgroundColor: '#00cec9',
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
   },
 });
 
