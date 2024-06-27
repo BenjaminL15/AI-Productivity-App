@@ -26,12 +26,6 @@ def test(req: https_fn.CallableRequest) -> https_fn.Response:
     input = data['inputText']
     messages_for_prompt = []
 
-    system_prompt = {
-        "role": "system",
-        "content": "When a task is given, respond with the time allocated for the task and provide options for 'Yes' or 'No'."
-    }
-    messages_for_prompt.append(system_prompt)
-
     for message in reversed(chat_history):
         text = message.get('text', '')
         respondent = message.get('user', '')
