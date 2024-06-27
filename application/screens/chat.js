@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList, KeyboardAvoidingView, Platform, Image, StatusBar } from 'react-native';
+import React, { useState, useEffect} from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList, KeyboardAvoidingView, Platform, Image, StatusBar, Modal, Alert } from 'react-native';
 import ChipIcon from '../constants/icon'
 import { getFunctions, httpsCallable } from "firebase/functions";
+import Timer from 'react-native-timer';
 
 const chip = ChipIcon.chip;
 
@@ -11,6 +12,22 @@ const ChatScreen = ({firebaseApp}) => {
   const test = httpsCallable(functions, 'test');
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
+  const [isModalVisible, setModalVisible] = useState(false);
+  const [timer, setTimer] = useState(5);
+
+  useEffect(() => {
+    if (isModalVisible && timer > 0) {
+      Timer.setTimeout(this, 'timer', () => {
+        setTimer(timer - 1);
+      }, 1000);
+    } else if (timer === 0) {
+      setModalVisible(false);
+      setTimer(5);
+    }
+    return () => {
+      Timer.clearTimeout(this, 'timer');
+    };
+  }, [timer, isModalVisible]);
 
   const handleSend = async () => {
     if (inputText.trim().length > 0) {
@@ -34,6 +51,9 @@ const ChatScreen = ({firebaseApp}) => {
             console.log(messages)
             // Add the bot's response to the messages
             setMessages((prevMessages) =>[newBotMessage, ...prevMessages]);
+            if (result.data.response.toLowerCase().includes('task')) {
+              setModalVisible(true);
+            }
           });
       } catch (error) {
         console.error('Error calling Firebase function:', error);
@@ -89,6 +109,21 @@ const ChatScreen = ({firebaseApp}) => {
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
+      <Modal
+        transparent={true}
+        visible={isModalVisible}
+        onRequestClose={() => {
+          Alert.alert('Modal has been closed.');
+          setModalVisible(!isModalVisible);
+        }}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalText}>Task Detected</Text>
+            <Text style={styles.modalTimer}>Closing in {timer} seconds...</Text>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -181,7 +216,27 @@ const styles = StyleSheet.create({
     height: 24,
     resizeMode: 'contain', 
   },
-  
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  modalContainer: {
+    width: 300,
+    padding: 20,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  modalText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  modalTimer: {
+    fontSize: 16,
+    marginTop: 10,
+  },
 });
 
 export default ChatScreen;
