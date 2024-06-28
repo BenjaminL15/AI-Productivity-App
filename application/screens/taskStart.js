@@ -1,5 +1,5 @@
 import React, {useState, useEffect } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 
@@ -64,44 +64,44 @@ const TaskStart = () => {
       );
     };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#1b1b2f',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  menuIcon: {
-    position: 'absolute',
-    top: 40,
-    left: 20,
-  },
-  menuText: {
-    color: '#fff',
-    fontSize: 24,
-  },
-  taskContainer: {
-    backgroundColor: '#f2c9d1',
-    padding: 20,
-    borderRadius: 20,
-    bottom: 150,
-    height: '35%',
-    width: '90%',
-    alignItems: 'center',
-  },
-  taskText: {
-    color: '#000',
-    fontSize: 24,
-    top: 130,
-  },
-  arrowContainer: {
-    alignItems: 'center',
-    top: 40,
-  },
-  exampleTask: {
-    color: 'white',
-    fontSize: '20',
-  }
-});
-
-export default TaskStart;
+    const styles = StyleSheet.create({
+      container: {
+        flex: 1,
+        backgroundColor: '#1b1b2f',
+        justifyContent: 'center',
+        alignItems: 'center',
+      },
+      menuIcon: {
+        position: 'absolute',
+        top: Platform.OS === 'ios' ? 40 : 20,
+        left: 20,
+      },
+      menuText: {
+        color: '#fff',
+        fontSize: 24,
+      },
+      taskContainer: {
+        backgroundColor: '#f2c9d1',
+        padding: 20,
+        borderRadius: 20,
+        marginTop: Platform.OS === 'ios' ? '20%' : '10%',
+        width: '90%',
+        alignItems: 'center',
+      },
+      taskText: {
+        color: '#000',
+        fontSize: 24,
+        marginBottom: 10,
+      },
+      arrowContainer: {
+        position: 'absolute',
+        bottom: Platform.OS === 'ios' ? 40 : 20,
+      },
+      exampleTask: {
+        color: 'white',
+        fontSize: 20,
+        marginTop: 10,
+      },
+    });
+    
+    export default TaskStart;
