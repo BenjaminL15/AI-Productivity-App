@@ -276,13 +276,13 @@ const styles = StyleSheet.create({
   taskModalContainer: {
     width: 300,
     padding: 20,
-    backgroundColor: '#FEE2E2',
+    backgroundColor: '#212332',
     borderRadius: 10,
     alignItems: 'center',
   },
   taskText: {
     fontSize: 16,
-    color: '#000000',
+    color: '#fff',
     textAlign: 'center',
     marginBottom: 20,
   },
@@ -291,7 +291,7 @@ const styles = StyleSheet.create({
   },
   timerText: {
     fontSize: 40,
-    color: '#000000',
+    color: '#fff',
     fontWeight: 'bold',
     textAlign: 'center',
   },
@@ -322,18 +322,19 @@ const styles = StyleSheet.create({
   timerModalContainer: {
     width: 300,
     padding: 20,
-    backgroundColor: '#fff',
+    backgroundColor: '#212332',
     borderRadius: 10,
     alignItems: 'center',
   },
   modalText: {
     fontSize: 20,
     fontWeight: 'bold',
+    color: '#fff',
   },
   modalTimer: {
     fontSize: 50, 
     fontWeight: 'bold',
-    color: '#000000',
+    color: '#fff',
     marginVertical: 20,
   },
   finishedButton: {
