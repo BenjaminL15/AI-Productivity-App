@@ -14,7 +14,7 @@ const ChatScreen = ({firebaseApp}) => {
   const [inputText, setInputText] = useState('');
   const [isTaskModalVisible, setTaskModalVisible] = useState(false);
   const [isTimerModalVisible, setTimerModalVisible] = useState(false);
-  const [timer, setTimer] = useState(5);
+  const [timer, setTimer] = useState(300);
   const [taskTime, setTaskTime] = useState('');
 
   useEffect(() => {
@@ -54,7 +54,7 @@ const ChatScreen = ({firebaseApp}) => {
             // Add the bot's response to the messages
             setMessages((prevMessages) =>[newBotMessage, ...prevMessages]);
             if (result.data.response.toLowerCase().includes('task')) {
-              setTaskTime('1 hour'); 
+              setTaskTime('5:00'); 
               setTaskModalVisible(true);
             }
           });
@@ -87,6 +87,12 @@ const ChatScreen = ({firebaseApp}) => {
       <Text style={styles.messageText}>{item.text}</Text>
     </View>
   );
+
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+  };
 
   return (
     <View style={styles.container}>
@@ -131,15 +137,17 @@ const ChatScreen = ({firebaseApp}) => {
         }}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <Text style={styles.modalText}>Task Detected</Text>
-            <Text style={styles.modalTimer}>This task will take {taskTime}</Text>
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity onPress={handleYes} style={styles.modalButton}>
-                <Text style={styles.buttonText}>Yes</Text>
+          <View style={styles.taskModalContainer}>
+            <Text style={styles.taskText}>Task Placeholder. Does the amount of time seem reasonable for completion?</Text>
+            <View style={styles.timerContainer}>
+              <Text style={styles.timerText}>{taskTime}</Text>
+            </View>
+            <View style={styles.buttonRow}>
+              <TouchableOpacity onPress={handleNo} style={[styles.modalButton, styles.moreTimeButton]}>
+                <Text style={styles.buttonText}>More time?</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={handleNo} style={styles.modalButton}>
-                <Text style={styles.buttonText}>No</Text>
+              <TouchableOpacity onPress={handleYes} style={[styles.modalButton, styles.yesButton]}>
+                <Text style={styles.buttonText}>Yes!</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -154,16 +162,23 @@ const ChatScreen = ({firebaseApp}) => {
         }}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <Text style={styles.modalText}>Task Accepted</Text>
-            <Text style={styles.modalTimer}>Closing in {timer} seconds...</Text>
+          <View style={styles.timerModalContainer}>
+            <Text style={styles.modalText}>Task</Text>
+            <Text style={styles.modalTimer}>{formatTime(timer)}</Text>
+            <View style={styles.buttonRow}>
+              <TouchableOpacity onPress={() => { setTimerModalVisible(false); Alert.alert('Task Finished.'); }} style={[styles.modalButton, styles.finishedButton]}>
+                <Text style={styles.buttonText}>Finished</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setTimer(timer + 60)} style={[styles.modalButton, styles.addTimeButton]}>
+                <Text style={styles.buttonText}>Add Time?</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -258,7 +273,53 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'rgba(0,0,0,0.5)',
   },
-  modalContainer: {
+  taskModalContainer: {
+    width: 300,
+    padding: 20,
+    backgroundColor: '#FEE2E2',
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  taskText: {
+    fontSize: 16,
+    color: '#000000',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  timerContainer: {
+    marginBottom: 20,
+  },
+  timerText: {
+    fontSize: 40,
+    color: '#000000',
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  modalButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  moreTimeButton: {
+    backgroundColor: '#FF6B6B',
+    flex: 1,
+    marginRight: 10,
+  },
+  yesButton: {
+    backgroundColor: '#1DD1A1',
+    flex: 1,
+  },
+  buttonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+  },
+  timerModalContainer: {
     width: 300,
     padding: 20,
     backgroundColor: '#fff',
@@ -270,24 +331,19 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   modalTimer: {
-    fontSize: 16,
-    marginTop: 10,
+    fontSize: 50, 
+    fontWeight: 'bold',
+    color: '#000000',
+    marginVertical: 20,
   },
-  buttonContainer: {
-    flexDirection: 'row',
-    marginTop: 20,
-  },
-  modalButton: {
+  finishedButton: {
+    backgroundColor: '#1DD1A1',
     flex: 1,
-    marginHorizontal: 10,
-    padding: 10,
-    backgroundColor: '#00cec9',
-    borderRadius: 10,
-    alignItems: 'center',
+    marginRight: 10,
   },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
+  addTimeButton: {
+    backgroundColor: '#FF6B6B',
+    flex: 1,
   },
 });
 
