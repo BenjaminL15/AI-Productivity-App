@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList, Keyboard
 import ChipIcon from '../constants/icon'
 import { getFunctions, httpsCallable } from "firebase/functions";
 import Timer from 'react-native-timer';
+import { Picker } from '@react-native-picker/picker';
 
 const chip = ChipIcon.chip;
 
@@ -16,6 +17,12 @@ const ChatScreen = ({firebaseApp}) => {
   const [isTimerModalVisible, setTimerModalVisible] = useState(false);
   const [timer, setTimer] = useState(300);
   const [taskTime, setTaskTime] = useState('');
+  const [selectedMinutes, setSelectedMinutes] = useState('0');
+  const [selectedSeconds, setSelectedSeconds] = useState('5');
+  const [showPicker, setShowPicker] = useState(false)
+
+  const AVAILABLE_MINUTES = Array.from({ length: 60 }, (_, i) => String(i));
+  const AVAILABLE_SECONDS = Array.from({ length: 60 }, (_, i) => String(i));
 
   useEffect(() => {
     if (isTimerModalVisible && timer > 0) {
@@ -82,6 +89,23 @@ const ChatScreen = ({firebaseApp}) => {
     Alert.alert('Task declined.');
   };
 
+  const handleMoreTime = () => {
+    setShowPicker(true);
+  };
+
+  const handlePickerCancel = () => {
+    setShowPicker(false);
+  };
+
+  const handlePickerConfirm = () => {
+    setTaskModalVisible(false); 
+    setShowPicker(false); 
+    
+    const totalSeconds = parseInt(selectedMinutes) * 60 + parseInt(selectedSeconds);
+    
+    setTimerModalVisible(true); 
+    setTimer(totalSeconds);
+  };
   const renderMessage = ({ item }) => (
     <View style={[styles.messageContainer, item.user === 'user' ? styles.userMessage : styles.aiMessage]}>
       <Text style={styles.messageText}>{item.text}</Text>
@@ -101,7 +125,7 @@ const ChatScreen = ({firebaseApp}) => {
           <Text style={styles.menuText}>≡</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Chip</Text>
-        <Image source={ChipIcon.chip} style={styles.chipIcon} />
+        <Image source={chip} style={styles.chipIcon} />
       </View>
       <FlatList
         data={messages}
@@ -143,13 +167,49 @@ const ChatScreen = ({firebaseApp}) => {
               <Text style={styles.timerText}>{taskTime}</Text>
             </View>
             <View style={styles.buttonRow}>
-              <TouchableOpacity onPress={handleNo} style={[styles.modalButton, styles.moreTimeButton]}>
+              <TouchableOpacity onPress={handleMoreTime} style={[styles.modalButton, styles.moreTimeButton]}>
                 <Text style={styles.buttonText}>More time?</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={handleYes} style={[styles.modalButton, styles.yesButton]}>
                 <Text style={styles.buttonText}>Yes!</Text>
               </TouchableOpacity>
             </View>
+            {showPicker && (
+              <View style={styles.pickerContainer}>
+  <View style={styles.pickerWrapper}>
+    <Picker
+      style={styles.picker}
+      selectedValue={selectedMinutes}
+      onValueChange={(itemValue) => setSelectedMinutes(itemValue)}
+    >
+      {AVAILABLE_MINUTES.map((value) => (
+        <Picker.Item key={value} label={value} value={value} />
+      ))}
+    </Picker>
+    <Text style={styles.pickerItem}>minutes</Text>
+  </View>
+  <View style={styles.pickerWrapper}>
+    <Picker
+      style={styles.picker}
+      selectedValue={selectedSeconds}
+      onValueChange={(itemValue) => setSelectedSeconds(itemValue)}
+    >
+      {AVAILABLE_SECONDS.map((value) => (
+        <Picker.Item key={value} label={value} value={value} />
+      ))}
+    </Picker>
+    <Text style={styles.pickerItem}>seconds</Text>
+  </View>
+  <View style={styles.modalButtonContainer}>
+    <TouchableOpacity onPress={handlePickerCancel} style={[styles.modalButton, styles.cancelButton]}>
+      <Text style={styles.buttonText}>Cancel</Text>
+    </TouchableOpacity>
+    <TouchableOpacity onPress={handlePickerConfirm} style={[styles.modalButton, styles.yesButton]}>
+      <Text style={styles.buttonText}>Confirm</Text>
+    </TouchableOpacity>
+  </View>
+</View>
+            )}
           </View>
         </View>
       </Modal>
@@ -179,6 +239,7 @@ const ChatScreen = ({firebaseApp}) => {
     </View>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -269,82 +330,106 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)',
   },
   taskModalContainer: {
-    width: 300,
+    backgroundColor: '#2B2B33',
     padding: 20,
-    backgroundColor: '#212332',
     borderRadius: 10,
+    width: '80%',
     alignItems: 'center',
   },
   taskText: {
-    fontSize: 16,
-    color: '#fff',
-    textAlign: 'center',
+    fontSize: 18,
+    color: '#FFF',
     marginBottom: 20,
   },
   timerContainer: {
+    backgroundColor: '#3E3E48',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 5,
     marginBottom: 20,
   },
   timerText: {
-    fontSize: 40,
-    color: '#fff',
-    fontWeight: 'bold',
-    textAlign: 'center',
+    fontSize: 24,
+    color: '#FFF',
   },
   buttonRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
   },
+  modalButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
   modalButton: {
     paddingVertical: 10,
     paddingHorizontal: 20,
-    borderRadius: 10,
+    borderRadius: 5,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   moreTimeButton: {
-    backgroundColor: '#FF6B6B',
-    flex: 1,
+    backgroundColor: '#5E5CE6',
     marginRight: 10,
   },
   yesButton: {
-    backgroundColor: '#1DD1A1',
-    flex: 1,
+    backgroundColor: '#44CF6C',
+    marginLeft: 10,
+  },
+  pickerWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
   },
   buttonText: {
-    color: '#FFFFFF',
+    fontSize: 16,
+    color: '#FFF',
+  },
+  pickerContainer: { 
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  picker: {
+    width: 80, 
+    color: '#FFF',
+    marginBottom: 10, 
+  },
+  pickerItem: {
+    color: '#FFF',
     fontSize: 16,
   },
   timerModalContainer: {
-    width: 300,
+    backgroundColor: '#2B2B33',
     padding: 20,
-    backgroundColor: '#212332',
     borderRadius: 10,
+    width: '80%',
     alignItems: 'center',
   },
   modalText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontSize: 18,
+    color: '#FFF',
+    marginBottom: 20,
   },
   modalTimer: {
-    fontSize: 50, 
-    fontWeight: 'bold',
-    color: '#fff',
-    marginVertical: 20,
+    fontSize: 24,
+    color: '#FFF',
+    marginBottom: 20,
   },
   finishedButton: {
-    backgroundColor: '#1DD1A1',
-    flex: 1,
-    marginRight: 10,
+    backgroundColor: '#44CF6C',
   },
   addTimeButton: {
-    backgroundColor: '#FF6B6B',
-    flex: 1,
+    backgroundColor: '#5E5CE6',
+  },
+  cancelButton: {
+    backgroundColor: '#EF4444', 
+    marginRight: 10,
   },
 });
 
