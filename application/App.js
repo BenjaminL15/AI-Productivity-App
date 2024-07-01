@@ -52,12 +52,35 @@ const verticalSwipeTransition = {
   cardStyleInterpolator: CardStyleInterpolators.forVerticalIOS,
 };
 
+const fadeTransition = {
+  gestureDirection: 'horizontal',
+  transitionSpec: {
+    open: {
+      animation: 'timing',
+      config: {
+        duration: 300,
+      },
+    },
+    close: {
+      animation: 'timing',
+      config: {
+        duration: 300,
+      },
+    },
+  },
+  cardStyleInterpolator: ({ current }) => ({
+    cardStyle: {
+      opacity: current.progress,
+    },
+  }),
+};
+
 const App = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator>
         <Stack.Screen name="Welcome" component={WelcomeScreen} options={{headerShown: false}}/>
-        <Stack.Screen name="TaskStart" component={TaskStart} options={{headerShown: false }} />
+        <Stack.Screen name="TaskStart" component={TaskStart} options={{headerShown: false, ...fadeTransition}} />
         <Stack.Screen 
           name="Chat" 
           component={ChatScreen} 
