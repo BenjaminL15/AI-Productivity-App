@@ -1,14 +1,13 @@
-import React, { useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList, KeyboardAvoidingView, Platform, Image, StatusBar, Modal, Alert } from 'react-native';
-import ChipIcon from '../constants/icon'
+import ChipIcon from '../constants/icon';
 import { getFunctions, httpsCallable } from "firebase/functions";
 import Timer from 'react-native-timer';
 import { Picker } from '@react-native-picker/picker';
 
 const chip = ChipIcon.chip;
 
-
-const ChatScreen = ({firebaseApp}) => {
+const ChatScreen = ({ firebaseApp }) => {
   const functions = getFunctions(firebaseApp);
   const test = httpsCallable(functions, 'test');
   const [messages, setMessages] = useState([]);
@@ -19,7 +18,7 @@ const ChatScreen = ({firebaseApp}) => {
   const [taskTime, setTaskTime] = useState('');
   const [selectedMinutes, setSelectedMinutes] = useState('0');
   const [selectedSeconds, setSelectedSeconds] = useState('5');
-  const [showPicker, setShowPicker] = useState(false)
+  const [showPicker, setShowPicker] = useState(false);
 
   const AVAILABLE_MINUTES = Array.from({ length: 60 }, (_, i) => String(i));
   const AVAILABLE_SECONDS = Array.from({ length: 60 }, (_, i) => String(i));
@@ -49,19 +48,19 @@ const ChatScreen = ({firebaseApp}) => {
 
       try {
         // Call the Firebase Cloud Function
-        test({messages: messages, inputText: inputText})
+        test({ messages: messages, inputText: inputText })
           .then((result) => {
-          // Create a new message object for the response
+            // Create a new message object for the response
             const newBotMessage = {
               id: (messages.length + 1).toString(),
               text: result.data.response, // Assuming the function returns an object with a 'response' field
               user: 'assistant',
             };
-            console.log(messages)
+            console.log(messages);
             // Add the bot's response to the messages
-            setMessages((prevMessages) =>[newBotMessage, ...prevMessages]);
+            setMessages((prevMessages) => [newBotMessage, ...prevMessages]);
             if (result.data.response.toLowerCase().includes('task')) {
-              setTaskTime('5:00'); 
+              setTaskTime('5:00');
               setTaskModalVisible(true);
             }
           });
@@ -98,14 +97,15 @@ const ChatScreen = ({firebaseApp}) => {
   };
 
   const handlePickerConfirm = () => {
-    setTaskModalVisible(false); 
-    setShowPicker(false); 
-    
+    setTaskModalVisible(false);
+    setShowPicker(false);
+
     const totalSeconds = parseInt(selectedMinutes) * 60 + parseInt(selectedSeconds);
-    
-    setTimerModalVisible(true); 
+
+    setTimerModalVisible(true);
     setTimer(totalSeconds);
   };
+
   const renderMessage = ({ item }) => (
     <View style={[styles.messageContainer, item.user === 'user' ? styles.userMessage : styles.aiMessage]}>
       <Text style={styles.messageText}>{item.text}</Text>
@@ -175,40 +175,42 @@ const ChatScreen = ({firebaseApp}) => {
               </TouchableOpacity>
             </View>
             {showPicker && (
-              <View style={styles.pickerContainer}>
-  <View style={styles.pickerWrapper}>
-    <Picker
-      style={styles.picker}
-      selectedValue={selectedMinutes}
-      onValueChange={(itemValue) => setSelectedMinutes(itemValue)}
-    >
-      {AVAILABLE_MINUTES.map((value) => (
-        <Picker.Item key={value} label={value} value={value} />
-      ))}
-    </Picker>
-    <Text style={styles.pickerItem}>minutes</Text>
-  </View>
-  <View style={styles.pickerWrapper}>
-    <Picker
-      style={styles.picker}
-      selectedValue={selectedSeconds}
-      onValueChange={(itemValue) => setSelectedSeconds(itemValue)}
-    >
-      {AVAILABLE_SECONDS.map((value) => (
-        <Picker.Item key={value} label={value} value={value} />
-      ))}
-    </Picker>
-    <Text style={styles.pickerItem}>seconds</Text>
-  </View>
-  <View style={styles.modalButtonContainer}>
-    <TouchableOpacity onPress={handlePickerCancel} style={[styles.modalButton, styles.cancelButton]}>
-      <Text style={styles.buttonText}>Cancel</Text>
-    </TouchableOpacity>
-    <TouchableOpacity onPress={handlePickerConfirm} style={[styles.modalButton, styles.yesButton]}>
-      <Text style={styles.buttonText}>Confirm</Text>
-    </TouchableOpacity>
-  </View>
-</View>
+              <View>
+                <View style={styles.pickerContainer}>
+                  <View style={styles.pickerWrapper}>
+                    <Picker
+                      style={styles.picker}
+                      selectedValue={selectedMinutes}
+                      onValueChange={(itemValue) => setSelectedMinutes(itemValue)}
+                    >
+                      {AVAILABLE_MINUTES.map((value) => (
+                        <Picker.Item key={value} label={value} value={value} />
+                      ))}
+                    </Picker>
+                    <Text style={styles.pickerItem}>minutes</Text>
+                  </View>
+                  <View style={styles.pickerWrapper}>
+                    <Picker
+                      style={styles.picker}
+                      selectedValue={selectedSeconds}
+                      onValueChange={(itemValue) => setSelectedSeconds(itemValue)}
+                    >
+                      {AVAILABLE_SECONDS.map((value) => (
+                        <Picker.Item key={value} label={value} value={value} />
+                      ))}
+                    </Picker>
+                    <Text style={styles.pickerItem}>seconds</Text>
+                  </View>
+                </View>
+                <View style={styles.modalButtonContainer}>
+                  <TouchableOpacity onPress={handlePickerCancel} style={[styles.modalButton, styles.cancelButton]}>
+                    <Text style={styles.buttonText}>Cancel</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={handlePickerConfirm} style={[styles.modalButton, styles.yesButton]}>
+                    <Text style={styles.buttonText}>Confirm</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
             )}
           </View>
         </View>
@@ -229,9 +231,6 @@ const ChatScreen = ({firebaseApp}) => {
               <TouchableOpacity onPress={() => { setTimerModalVisible(false); Alert.alert('Task Finished.'); }} style={[styles.modalButton, styles.finishedButton]}>
                 <Text style={styles.buttonText}>Finished</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => setTimer(timer + 60)} style={[styles.modalButton, styles.addTimeButton]}>
-                <Text style={styles.buttonText}>Add Time?</Text>
-              </TouchableOpacity>
             </View>
           </View>
         </View>
@@ -243,7 +242,7 @@ const ChatScreen = ({firebaseApp}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#212332', 
+    backgroundColor: '#212332',
   },
 
   headerContainer: {
@@ -359,7 +358,7 @@ const styles = StyleSheet.create({
   },
   buttonRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     width: '100%',
   },
   modalButtonContainer: {
@@ -384,13 +383,14 @@ const styles = StyleSheet.create({
   pickerWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10,
+    marginHorizontal: 10,
   },
   buttonText: {
     fontSize: 16,
     color: '#FFF',
   },
   pickerContainer: { 
+    flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 20,
@@ -422,10 +422,9 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   finishedButton: {
+    position: 'relative',
     backgroundColor: '#44CF6C',
-  },
-  addTimeButton: {
-    backgroundColor: '#5E5CE6',
+    alignItems: 'center',
   },
   cancelButton: {
     backgroundColor: '#EF4444', 
