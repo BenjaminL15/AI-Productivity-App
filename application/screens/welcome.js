@@ -1,7 +1,7 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import llama from '../constants/image'
+import llama from '../constants/image';
 
 const WelcomeScreen = () => {
   const navigation = useNavigation();
@@ -19,7 +19,7 @@ const WelcomeScreen = () => {
         <Text style={styles.profileTagline}>Personal AI assistant to help you chip away tasks!</Text>
         <View style={styles.line}></View>
         <TouchableOpacity style={styles.button} onPress={handleGetStartedPress}>
-            <Text style={styles.buttonText}>Get Started!</Text>
+          <Text style={styles.buttonText}>Get Started!</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -38,19 +38,19 @@ const styles = StyleSheet.create({
     color: 'white',
     marginBottom: 20,
     position: 'absolute',
-    top: 110,
+    top: Platform.OS === 'ios' ? 110 : 90, 
     fontWeight: '700',
   },
   profileContainer: {
     alignItems: 'center',
-    height: 800,
-    width: 600, 
+    height: Platform.OS === 'ios' ? 800 : 600, 
+    width: 600,
     backgroundColor: '#ECECEC',
-    paddingVertical: 60, 
+    paddingVertical: 60,
     paddingHorizontal: 10,
-    borderRadius: 300, 
-    position: 'absolute', 
-    bottom: -350, 
+    borderRadius: 300,
+    position: 'absolute',
+    bottom: Platform.OS === 'ios' ? -350 : -250, 
   },
   profileImage: {
     width: 100,
@@ -58,12 +58,12 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     marginBottom: 20,
     position: 'absolute',
-    top: 180,
+    top: Platform.OS === 'ios' ? 180 : 160, 
   },
   profileName: {
     fontSize: 40,
     color: 'white',
-    bottom: 130,
+    bottom: Platform.OS === 'ios' ? 130 : 110, 
     fontWeight: '600',
   },
   profileTagline: {
@@ -71,13 +71,13 @@ const styles = StyleSheet.create({
     color: 'black',
     textAlign: 'center',
     paddingHorizontal: 20,
-    bottom: -40,
+    bottom: Platform.OS === 'ios' ? -40 : -20, 
   },
   line: {
-    width: '20%', 
+    width: '20%',
     borderBottomColor: '#212332',
     borderBottomWidth: 3,
-    bottom: -60, 
+    bottom: Platform.OS === 'ios' ? -60 : -40, 
   },
   button: {
     marginTop: 20,
@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 40,
     borderRadius: 20,
-    bottom: -100,
+    bottom: Platform.OS === 'ios' ? -100 : -80, 
   },
   buttonText: {
     color: 'white',
