@@ -6,6 +6,7 @@ import { createStackNavigator, CardStyleInterpolators } from '@react-navigation/
 import ChatScreen from '../application/screens/chat'; 
 import WelcomeScreen from '../application/screens/welcome';
 import TaskStart from '../application/screens/taskStart';
+import TaskNode from '../application/screens/taskNodes';
 
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
@@ -77,6 +78,9 @@ const fadeTransition = {
 
 const App = () => {
   return (
+    // <View style={styles.container}>
+    //   <TaskNode/>
+    // </View>
     <NavigationContainer>
       <Stack.Navigator>
         <Stack.Screen name="Welcome" component={WelcomeScreen} options={{headerShown: false}}/>
