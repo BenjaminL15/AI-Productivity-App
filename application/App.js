@@ -78,24 +78,24 @@ const fadeTransition = {
 
 const App = () => {
   return (
-    // <View style={styles.container}>
-    //   <TaskNode/>
-    // </View>
-    <NavigationContainer>
-      <Stack.Navigator>
-        <Stack.Screen name="Welcome" component={WelcomeScreen} options={{headerShown: false}}/>
-        <Stack.Screen name="TaskStart" component={TaskStart} options={{headerShown: false, ...fadeTransition}} />
-        <Stack.Screen 
-          name="Chat" 
-          component={ChatScreen} 
-          initialParams={{ firebaseApp: app }} 
-          options={{ 
-            ...verticalSwipeTransition,
-            headerShown: false 
-          }} 
-        />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <View style={styles.container}>
+      <TaskNode/>
+    </View>
+    // <NavigationContainer>
+    //   <Stack.Navigator>
+    //     <Stack.Screen name="Welcome" component={WelcomeScreen} options={{headerShown: false}}/>
+    //     <Stack.Screen name="TaskStart" component={TaskStart} options={{headerShown: false, ...fadeTransition}} />
+    //     <Stack.Screen 
+    //       name="Chat" 
+    //       component={ChatScreen} 
+    //       initialParams={{ firebaseApp: app }} 
+    //       options={{ 
+    //         ...verticalSwipeTransition,
+    //         headerShown: false 
+    //       }} 
+    //     />
+    //   </Stack.Navigator>
+    // </NavigationContainer>
   );
 };
 
