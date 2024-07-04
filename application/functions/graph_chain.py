@@ -8,7 +8,7 @@ from langchain_core.runnables  import RunnableConfig
 from base_chains import BaseChain
 
 class GenerativeUIState(TypedDict, total=False):
-    input: 
+    input: Optional[List[(str, str)]]
     result: Optional[str]
     # parsed tool calls
     tool_calls: Optional[List[dict]]
