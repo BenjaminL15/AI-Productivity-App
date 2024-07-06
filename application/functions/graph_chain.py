@@ -5,8 +5,13 @@ from langgraph.graph.graph import CompiledGraph
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables  import RunnableConfig
-from base_chains import BaseChain
-from tools.activate_task import create_actionable_task
+from base_chains import create_llm
+from activate_task import create_actionable_task
+
+ASSIGN_TOOLS = "Assigning the tools"
+RESPONSE = "Producing the response"
+MODEL_CALL = "Calling the model"
+
 
 class GenerativeUIState(TypedDict, total=False):
     input: List[tuple]
@@ -29,8 +34,8 @@ def invoke_model(state: GenerativeUIState, config: RunnableConfig) -> Generative
         ] + state["input"]
     )
 
-    model = BaseChain.create_llm()
-    model_with_tools = model.bind_tools(create_actionable_task)
+    model = create_llm()
+    model_with_tools = model.bind_tools([create_actionable_task])
     chain = INITIAL_PROMPT | model_with_tools
     result = chain.invoke(config)
     print("We reached the end of invoke model")
@@ -43,10 +48,10 @@ def invoke_tools_or_respond(state: GenerativeUIState) -> str:
     print("We reached the invoke tools or respond")
     if "tool_calls" in state and isinstance(state["tool_calls"], list):
         print("We reached the end of tools or respond")
-        return "invoke_tools" 
+        return ASSIGN_TOOLS 
     else:
         print("We reached the end of tools or respond else statement")
-        return "produce_response"
+        return RESPONSE
     
 def invoke_tools(state: GenerativeUIState) -> GenerativeUIState:
     print("We reached the invoke tools")
@@ -84,24 +89,24 @@ def produce_response(state: GenerativeUIState, config: RunnableConfig) -> str:
             ),   
         ] + state["input"]
     )
-    model = BaseChain.create_llm()
+    model = create_llm()
     chain = RESPONSE_PROMPT | model | StrOutputParser()
     result = chain.invoke(config)
     print("we are at the end of produce response")
-    return {"input" : [("system",result)] }
+    return {"input" : [("system", result)] }
 
 def create_graph() -> CompiledGraph:
     print("We are in create graph")
 
     workflow = StateGraph(GenerativeUIState)
 
-    workflow.add_node("Calling the model", invoke_model) # This part calls the AI and it will decide what to respond with
-    workflow.add_node("Assigning the tools", invoke_tools) # This basically assigns and calls the tools that the AI is assigned to or return plain text
-    workflow.add_node("Producing the response", produce_response) # adding the response 
-    workflow.add_conditional_edges("Calling the model", invoke_tools_or_respond) # If no tools assigned, it will just return a default text
-    workflow.add_edge("Assigning the tools", "Producing the response")
-    workflow.set_entry_point("Calling the model") # starting point is the calling the model
-    workflow.set_finish_point("Producing the response") # end point is assigning and calling the tools or the END point which is the text response 
+    workflow.add_node(MODEL_CALL, invoke_model) # This part calls the AI and it will decide what to respond with
+    workflow.add_node(ASSIGN_TOOLS, invoke_tools) # This basically assigns and calls the tools that the AI is assigned to or return plain text
+    workflow.add_node(RESPONSE, produce_response) # adding the response 
+    workflow.add_conditional_edges(MODEL_CALL, invoke_tools_or_respond) # If no tools assigned, it will just return a default text
+    workflow.add_edge(ASSIGN_TOOLS, RESPONSE)
+    workflow.set_entry_point(MODEL_CALL) # starting point is the calling the model
+    workflow.set_finish_point(RESPONSE) # end point is assigning and calling the tools or the END point which is the text response 
 
     graph = workflow.compile()
     return graph
