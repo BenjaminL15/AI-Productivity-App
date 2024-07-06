@@ -13,7 +13,6 @@ from firebase_admin import credentials
 
 
 CRED = credentials.Certificate("./secret.json")
-GROQ_API_KEY = StringParam("GROQ_API")
 SYSTEM_PROMPT = "You are a helpful assistant that guides users in breaking down tasks.\
                  You make users feel heard while prompting them to think about their\
                  task and how it can be reduced or if they have already made progress\
@@ -24,8 +23,9 @@ SYSTEM_PROMPT = "You are a helpful assistant that guides users in breaking down 
 
 app = initialize_app()
 
-def format_chat_history(raw_chat: List[Dict], input: str) -> List[(str, str)]:
+def format_chat_history(raw_chat: List[Dict], input: str) -> List[tuple]:
             """Formats the chat history to be compatible with the OpenAI chat completion API."""
+            print("We are in format chat history")
             formatted_chat_history = []
             for message in reversed(raw_chat):
                 text = message.get('text', '')
@@ -39,12 +39,15 @@ def format_chat_history(raw_chat: List[Dict], input: str) -> List[(str, str)]:
 def test(req: https_fn.CallableRequest) -> https_fn.Response:
     """Saves a message to the Firebase Realtime Database but sanitizes the text
     by removing swear words."""
+    print("We are in test")
     data = req.data
     chat_history: List[Dict] = data['messages']
     input = data['inputText']
     graph = create_graph()
     messages_for_prompt = format_chat_history(chat_history, input)
-    ret = graph.invoke(input=messages_for_prompt)
+    print("We reached the end of this")
+    ret = graph.invoke({"input" : messages_for_prompt})
+    print("We reached the invoke")
     
     print(ret)
     return {"response": ret["input"][-1][1]}
