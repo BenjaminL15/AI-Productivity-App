@@ -5,20 +5,10 @@ from langgraph.graph.graph import CompiledGraph
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables  import RunnableConfig
+from base_chains import ChatGroqSingleton
+from activate_task import create_actionable_task
 
 
-
-from langchain_groq import ChatGroq
-from firebase_functions.params import StringParam
-
-GROQ_API_KEY = StringParam("GROQ_API")
-
-def create_llm():
-    return ChatGroq(
-        temperature=0,
-        model="llama3-70b-8192",
-        api_key=GROQ_API_KEY.value
-    )
 
 ASSIGN_TOOLS = "Assigning the tools"
 RESPONSE = "Producing the response"
@@ -50,19 +40,32 @@ def produce_response(state: GenerativeUIState, config: RunnableConfig) -> str:
             ),   
         ] + state["input"]
     )
-    model = create_llm()
+    model = ChatGroqSingleton().get_llm()
     chain = RESPONSE_PROMPT | model | StrOutputParser()
     result = chain.invoke(config)
     print("we are at the end of produce response")
     return {"input" : [("system", result)] }
 
-def invoke_model(state: GenerativeUIState, config: RunnableConfig) -> str:
+def invoke_model(state: GenerativeUIState) -> GenerativeUIState:
     print("We are at invoke_model")
     return 
 
-def invoke_tools(state: GenerativeUIState, config: RunnableConfig) -> str:
+def invoke_tools(state: GenerativeUIState) -> GenerativeUIState:
     print("We are at invoke_tools")
-    return {"input" : [("system", "Mention today is Saturday")] }
+    create_test = create_actionable_task(str(state["input"]))
+    print(f"Create_actionable_task results : {create_test}")
+    return {"tool_result": [create_test]}
+
+    # tools_map = {
+    #     "activate-task": create_actionable_task
+    # }
+
+    # if state["tool_calls"] is not None:
+    #     # tool = state["tool_calls"][0]
+    #     # selected_tool = tools_map[tool["type"]]
+    #     print("We reached the invoke tools end of if statement")
+    # else:
+    #     raise ValueError("No tool calls found in state.")
 
 def create_graph() -> CompiledGraph:
     print("We are in create graph")
