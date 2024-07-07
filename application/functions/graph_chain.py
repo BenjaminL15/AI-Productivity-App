@@ -56,10 +56,9 @@ def invoke_model(state: GenerativeUIState, config: RunnableConfig) -> Generative
         [
             (
                 "system",
-                """You are a helpful assistant. decide if the user is trying to pursue a task.\n
-                The 'user' message is the most important while all other messages from the user and the ai should just be used for context.
-                If a clear new task has been identified then provide the most recent relevant messages between the user and the AI in its raw form, completely unedited.
-                If the user is not trying to pursue a task then do not call your function."""
+                "You are a helpful assistant. decide if the user is trying to pursue a specific task.\n"
+                + "The most recent 'user' message is the most important while all other messages from the user and the ai should just be used for context."
+                + "If the user is not trying to pursue a specific task then do not call your function."
             ),   
         ] + state["input"]
     )
