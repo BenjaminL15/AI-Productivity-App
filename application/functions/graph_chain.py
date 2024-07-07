@@ -5,6 +5,8 @@ from langgraph.graph.graph import CompiledGraph
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables  import RunnableConfig
+from langchain_core.messages import AIMessage, HumanMessage
+from langchain.output_parsers.openai_tools import JsonOutputToolsParser
 from base_chains import ChatGroqSingleton
 from create_task import create_task
 
@@ -48,7 +50,33 @@ def produce_response(state: GenerativeUIState, config: RunnableConfig) -> str:
 
 def invoke_model(state: GenerativeUIState, config: RunnableConfig) -> GenerativeUIState:
     print("We are at invoke_model")
-    return {"tool_calls": [{"name": "create_task", "args": {"description": state["input"]}}]}
+    tools_parser = JsonOutputToolsParser()
+
+    CREATE_TASK_CONDITIONAL_PROMPT = ChatPromptTemplate.from_messages(
+        [
+            (
+                "system",
+                """You are a helpful assistant. decide if the user is trying to pursue a task.\n
+                The 'user' message is the most important while all other messages from the user and the ai should just be used for context.
+                If a clear new task has been identified then provide the most recent relevant messages between the user and the AI in its raw form, completely unedited.
+                If the user is not trying to pursue a task then do not call your function."""
+            ),   
+        ] + state["input"]
+    )
+    model = ChatGroqSingleton().get_llm()
+    tools = [create_task]
+    descision_model = model.bind_tools(tools)
+    chain = CREATE_TASK_CONDITIONAL_PROMPT | descision_model
+    result = chain.invoke({"input": state["input"]}, config)
+
+    if not isinstance(result, AIMessage):
+        raise ValueError("Invalid result from model. Expected AIMessage.")
+    
+    if isinstance(result.tool_calls, list) and len(result.tool_calls) > 0:
+        print(f"this is invoke model result: {result}")
+        parsed_tools = tools_parser.invoke(result, config)
+        return {"tool_calls": parsed_tools}
+    print(f"no tool call made: {result}")
 
 def invoke_tools(state: GenerativeUIState, config: RunnableConfig) -> GenerativeUIState:
     print(f"post state tool calls: {state['tool_calls']}")
@@ -59,12 +87,12 @@ def invoke_tools(state: GenerativeUIState, config: RunnableConfig) -> Generative
     }
 
     if state["tool_calls"] is None:
-        raise ValueError("No tool calls found in state.")
+        return
     
     print(f"pre tool call itteration")
     for tool_call in state["tool_calls"]:
         print(f"inside the loop: {tool_call}")
-        selected_tool = tools_map[tool_call["name"].lower()]
+        selected_tool = tools_map[tool_call["type"].lower()]
         tool_results.append(selected_tool.invoke(str(tool_call["args"])))
     print(tool_results)
     return {"tool_results": tool_results}

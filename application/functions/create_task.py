@@ -8,7 +8,7 @@ from firebase_functions.params import StringParam
 from base_chains import ChatGroqSingleton
 
 class RecentMessages(BaseModel):
-    input: str = Field(..., description="recent messages between the user and ai assistant")
+    input: str = Field(..., description="provide recent messages between the user and ai assistant")
 class Task(BaseModel):
     description: str = Field(..., description="concise summary of the task the user wants to complete")
 
