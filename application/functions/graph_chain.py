@@ -18,6 +18,7 @@ MODEL_CALL = "Calling the model"
 
 class GenerativeUIState(TypedDict, total=False):
     input: List[tuple]
+    tasks: List[str]
     result: Optional[str]
     # parsed tool calls
     tool_calls: Optional[List[dict]]
@@ -46,7 +47,7 @@ def produce_response(state: GenerativeUIState, config: RunnableConfig) -> str:
     chain = RESPONSE_PROMPT | model | StrOutputParser()
     result = chain.invoke(config)
     print("we are at the end of produce response")
-    return {"input" : [("system", result)] }
+    return {"input" : [("assistant", result)] }
 
 def invoke_model(state: GenerativeUIState, config: RunnableConfig) -> GenerativeUIState:
     print("We are at invoke_model")
@@ -94,7 +95,8 @@ def invoke_tools(state: GenerativeUIState, config: RunnableConfig) -> Generative
         selected_tool = tools_map[tool_call["type"].lower()]
         tool_results.append(selected_tool.invoke(str(tool_call["args"])))
     print(tool_results)
-    return {"tool_results": tool_results}
+    return {"tool_results": tool_results, "tasks": tool_results[0].description}
+
 
 
 

@@ -36,12 +36,13 @@ def test(req: https_fn.CallableRequest) -> https_fn.Response:
     print("We are in test")
     data = req.data
     chat_history: List[Dict] = data['messages']
+    task_history: List[str] = data['tasks']
     input = data['inputText']
     graph = create_graph()
     messages_for_prompt = format_chat_history(chat_history, input)
     print("We reached the end of this")
-    ret = graph.invoke({"input" : messages_for_prompt})
+    ret = graph.invoke({"input" : messages_for_prompt, "tasks": task_history})
     print("We reached the invoke")
     
     print(ret)
-    return {"response": ret["input"][-1][1]}
+    return {"response": ret["input"][-1][1], "tasks": ret["tasks"]}

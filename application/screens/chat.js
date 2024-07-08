@@ -11,6 +11,7 @@ const ChatScreen = ({ firebaseApp }) => {
   const functions = getFunctions(firebaseApp);
   const test = httpsCallable(functions, 'test');
   const [messages, setMessages] = useState([]);
+  const [tasks, setTasks] = useState([]);
   const [inputText, setInputText] = useState('');
   const [isTaskModalVisible, setTaskModalVisible] = useState(false);
   const [isTimerModalVisible, setTimerModalVisible] = useState(false);
@@ -48,7 +49,7 @@ const ChatScreen = ({ firebaseApp }) => {
 
       try {
         // Call the Firebase Cloud Function
-        test({ messages: messages, inputText: inputText })
+        test({ messages: messages, inputText: inputText, tasks: tasks})
           .then((result) => {
             // Create a new message object for the response
             const newBotMessage = {
@@ -59,6 +60,8 @@ const ChatScreen = ({ firebaseApp }) => {
             console.log(messages);
             // Add the bot's response to the messages
             setMessages((prevMessages) => [newBotMessage, ...prevMessages]);
+            setTasks((prevTasks) => [...prevTasks, result.data.tasks]);
+            console.log(tasks);
             if (result.data.response.toLowerCase().includes('task')) {
               setTaskTime('5:00');
               setTaskModalVisible(true);

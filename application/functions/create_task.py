@@ -11,7 +11,7 @@ from examples import create_shot_prompt
 class RecentMessages(BaseModel):
     input: str = Field(..., description="provide recent messages between the user and ai assistant")
 class Task(BaseModel):
-    description: str = Field(..., description="concise summary of the task the user wants to complete")
+    description: str = Field(..., description="concise but specific summary of the task the user wants to complete")
 
 @tool("create_task", args_schema=RecentMessages, return_direct=True)
 def create_task(chat_history: str):
