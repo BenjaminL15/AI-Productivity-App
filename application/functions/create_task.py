@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 from langchain_core.tools import tool
 from langchain_core.messages import AIMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
@@ -9,12 +9,12 @@ from base_chains import ChatGroqSingleton
 from examples import create_shot_prompt
 
 class RecentMessages(BaseModel):
-    input: str = Field(..., description="provide recent messages between the user and ai assistant")
+    input: List[tuple] = Field(..., description="provide recent messages between the user and ai assistant")
 class Task(BaseModel):
     description: str = Field(..., description="concise but specific summary of the task the user wants to complete")
 
 @tool("create_task", args_schema=RecentMessages, return_direct=True)
-def create_task(chat_history: str):
+def create_task(input: str):
     """Create a task that the user will try to complete within a couple of minutes."""
         
     task_template = ChatPromptTemplate.from_messages(
@@ -29,17 +29,14 @@ def create_task(chat_history: str):
                 The response should be in the form of a JSON object with the keys 'description'""",
             ),
             create_shot_prompt,
-            (
-                "user",
-                "Here is the recent conversation messages: {input}"
-            ),
+            MessagesPlaceholder("input")
         ]
     )
 
     model = ChatGroqSingleton().get_llm()
     stuctered_model = model.with_structured_output(Task, method="json_mode")
     chain = task_template | stuctered_model
-    result = chain.invoke({"input" : chat_history})
+    result = chain.invoke({"input" : input})
 
     # if not isinstance(result, AIMessage):
     #     raise ValueError("Invalid result from model. Expected AIMessage.")

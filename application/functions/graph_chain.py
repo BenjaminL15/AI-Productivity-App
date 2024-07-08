@@ -1,9 +1,8 @@
 from typing import List, Optional, TypedDict
-from langchain.output_parsers.openai_tools import JsonOutputToolsParser
 from langgraph.graph import END, StateGraph  # not sure about the from langgraph import stuff 
 from langgraph.graph.graph import CompiledGraph
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_core.output_parsers import StrOutputParser
+from langchain_core.output_parsers import StrOutputParser, JsonOutputParser
 from langchain_core.runnables  import RunnableConfig
 from langchain_core.messages import AIMessage, HumanMessage
 from langchain.output_parsers.openai_tools import JsonOutputToolsParser
@@ -21,7 +20,7 @@ class GenerativeUIState(TypedDict, total=False):
     tasks: List[str]
     result: Optional[str]
     # parsed tool calls
-    tool_calls: Optional[List[dict]]
+    tool_calls: Optional[List[str]]
     # result of the tool calls
     tool_results: Optional[dict]
 
@@ -57,25 +56,35 @@ def invoke_model(state: GenerativeUIState, config: RunnableConfig) -> Generative
         [
             (
                 "system",
-                "You are a helpful assistant. decide if the user is trying to pursue a specific task.\n"
-                + "The most recent 'user' message is the most important while all other messages from the user and the ai should just be used for context."
-                + "If the user is not trying to pursue a specific task then do not call your function."
+                """
+                You are an expert conversation analyst. 
+                decide if the user is trying to pursue a specific task.
+
+                If any of the below conditions are met do NOT call create_task tool:
+                - user is not trying to pursue a specific task
+                - user is working out the details of current task
+                - if the determined task is the same as a task within the "task history" (Note: sub-tasks are considered different)
+
+                here is the "task history": {tasks}
+
+                The response should be in the form of a JSON object with the keys 'create_task'.
+                The value should be a binary score 'yes' or 'no' indicating whether or not to call the create_task tool.
+
+                Below is the "conversation history" will be provided:
+                """
             ),   
-        ] + state["input"]
+            MessagesPlaceholder("input")
+        ]
     )
     model = ChatGroqSingleton().get_llm()
-    tools = [create_task]
-    descision_model = model.bind_tools(tools)
-    chain = CREATE_TASK_CONDITIONAL_PROMPT | descision_model
-    result = chain.invoke({"input": state["input"]}, config)
-
-    if not isinstance(result, AIMessage):
+    chain = CREATE_TASK_CONDITIONAL_PROMPT | model | JsonOutputParser()
+    result = chain.invoke({"input": state["input"], "tasks": state["tasks"]}, config)
+    print(f"INVOKE TOOL result: {result}, type is {type(result)}")
+    if not isinstance(result, dict):
         raise ValueError("Invalid result from model. Expected AIMessage.")
     
-    if isinstance(result.tool_calls, list) and len(result.tool_calls) > 0:
-        print(f"this is invoke model result: {result}")
-        parsed_tools = tools_parser.invoke(result, config)
-        return {"tool_calls": parsed_tools}
+    if result["create_task"] == "yes":
+        return {"tool_calls": ["create_task"]}
     print(f"no tool call made: {result}")
 
 def invoke_tools(state: GenerativeUIState, config: RunnableConfig) -> GenerativeUIState:
@@ -92,10 +101,11 @@ def invoke_tools(state: GenerativeUIState, config: RunnableConfig) -> Generative
     print(f"pre tool call itteration")
     for tool_call in state["tool_calls"]:
         print(f"inside the loop: {tool_call}")
-        selected_tool = tools_map[tool_call["type"].lower()]
-        tool_results.append(selected_tool.invoke(str(tool_call["args"])))
+        print(f"inside the loop state['input'] type is: {type(state['input'])}")
+        selected_tool = tools_map[tool_call]
+        tool_results.append(selected_tool.invoke({"input":state["input"]}))
     print(tool_results)
-    return {"tool_results": tool_results, "tasks": tool_results[0].description}
+    return {"tool_results": tool_results, "tasks": [tool_results[0].description]}
 
 
 
