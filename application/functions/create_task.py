@@ -6,6 +6,7 @@ from langchain.pydantic_v1 import BaseModel, Field
 from langchain_groq import ChatGroq
 from firebase_functions.params import StringParam
 from base_chains import ChatGroqSingleton
+from examples import create_shot_prompt
 
 class RecentMessages(BaseModel):
     input: str = Field(..., description="provide recent messages between the user and ai assistant")
@@ -27,6 +28,7 @@ def create_task(chat_history: str):
                 In case there is no clear immediate task that has been agreed upon then set task to none.\n
                 The response should be in the form of a JSON object with the keys 'description'""",
             ),
+            create_shot_prompt,
             (
                 "user",
                 "Here is the recent conversation messages: {input}"
