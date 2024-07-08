@@ -16,7 +16,7 @@ examples = [
 
 example_prompt = ChatPromptTemplate.from_messages(
     [
-        ("system", "{output}"),
+        ("assistant", "{output}"),
         ("user", "{input}"),
     ]
 )
