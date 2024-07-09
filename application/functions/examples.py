@@ -1,6 +1,7 @@
 from langchain_core.prompts import (
     ChatPromptTemplate,
     FewShotChatMessagePromptTemplate,
+    MessagesPlaceholder,
 )
 
 examples_create_task = [
@@ -48,79 +49,101 @@ examples_invoke_model = [
 ]
 
 examples_time_task = [
-    {
-        "input": "I need to plan a party for my sister",
-        "output": {
-            "task": "Plan party for sister",
-            "time": "45 minutes",
-            "task_history": {
-                "Decide on the theme": "5 minutes",
-                "Create a guest list": "10 minutes",
-                "Send out invitations": "5 minutes",
-                "Plan the menu": "10 minutes",
-                "Buy decorations and supplies": "10 minutes",
-                "Set up the party area": "15 minutes"
-            }
-        }
+    {"input": "I need to plan a party for my sister", "output": "20"},
+    {"input": "My goal is to figure out what I should write in my email to my professor", "output": "10"},
+    {"input": "I'm trying to organize my notes for my exam", "output": "15"},
+    {"input": "Grocery shopping for the week needs to be done", "output": "59"},
+    {"input": "The plumber needs to be called about the kitchen sink", "output": "30"},
+]
+
+examples_activate_task = [
+    {"input" : (
+            ("user", "I need to plan a party for my mom"),
+            ("assistant", """planning a party for your mom can be a big task! Let's break it down together. \n
+            To get started, can you tell me what's the most important thing to you about this party? Is it the guest list, the theme, the food, or something else?"""),
+            ("user", "Food is the most important, so I need to set that up"),
+            ("assistant", """Food is a crucial part of any party. Let's focus on that for now. \n 
+            What type of food are you thinking of serving? Is it going to be a full meal, appetizers and snacks, or just desserts?"""),
+            ("user", "It should just be snacks"),
+            ("assistant", """Snacks are a great option for a party. Now let's narrow it down a bit more. \n 
+            Are you planning to make the snacks yourself, or would you like to order them from a catering service or store?"""),
+            ("user", "I need to order them from a catering service"),
+            ("assistant", """Ordering from a catering service can save you a lot of time and effort. \n
+            What's the next step you need to take to order from a catering service? Do you need to research and find a service, or do you already have one in mind?"""),
+            ("user", "I dont know what catering service to call")
+        ),
+    "task" : "Research catering services",
+    "output" : '{"activate_task": "yes"}'
     },
-    {
-        "input": "My goal is to figure out what I should write in my email to my professor",
-        "output": {
-            "task": "Figure out email content for professor",
-            "time": "30 minutes",
-            "task_history": {
-                "List key points to include": "10 minutes",
-                "Draft the email": "10 minutes",
-                "Review and edit the email": "10 minutes"
-            }
-        }
+
+    {"input" : (
+        ("user", "I need to study for an exam"),
+        ("assistant", """Studying for an exam can feel overwhelming! \n 
+        Let's break it down together> What's the first thing that comes to mind when you think about studying for this exam? Is it a specific topic, chapter, or concept that you need to focus on?"""),
+        ("user", "It's a data structures and algorithms exam"),
+        ("assistant", """Data structures and algorithms can be a challenging topic! \n
+        Let's narrow it down further. Are there any specific data structures or algorithms that you're struggling with or feel less confidence about such as arrays, linked lists, stacks or sorting algorithms?"""),
+        ("user", "I need to review linked lists"),
+        ("assistant", """Linked lists are a fundamental data structure! \n
+        What's one specific aspect of linked lists that you'd like to review or feel uncertain about, such as inserting nodes, deleting nodes, or traversing the list?"""),
+        ("user", "I need to organize my notes for Linked lists"),
+        ),
+    "task" : "Organize notes for linked lists",
+    "output" : '{"activate_task": "yes"}'
     },
-    {
-        "input": "I'm trying to organize my notes for my exam",
-        "output": {
-            "task": "Organize notes for exam",
-            "time": "1 hour",
-            "task_history": {
-                "Gather all notes": "20 minutes",
-                "Sort notes by topic": "20 minutes",
-                "Highlight key information": "10 minutes",
-                "Create summary sheets": "10 minutes"
-            }
-        }
+    {"input" : (
+        ("user", "I need to redecorate my living room"),
+        ("assistant", """Redecorating a living room is a great project! \n
+        Let's break it down step by step. What is the most important aspect for you? Is it the furniture, the color scheme, the lighting, or something else?"""),
+        ("user", "The color scheme is the most important"),
+        ("assistant", """A good color scheme can set the tone for the whole room. \n
+        Do you have any specific colors or themes in mind, or would you like some suggestions?"""),
+        ("user", "I need suggestions for colors that would go well with my existing furniture"),
+        ("assistant", """Sure, let's figure that out. \n
+        What is the dominant color or material of your existing furniture?"""),
+        ("user", "My furniture is mostly dark wood"),
+        ("assistant", """Dark wood furniture can be complemented beautifully with a variety of colors. \n
+        Do you prefer a warm, cozy feel with earthy tones, or a bright, airy atmosphere with lighter colors?"""),
+        ("user", "I prefer a warm, cozy feel"),
+        ("assistant", """Great choice! \n
+        The next step would be to look at some specific color palettes. Would you like to search for some inspiration online, or do you have any sources in mind?"""),
+        ("user", "I need to search for inspiration online")
+        ),
+    "task" : "Search for color scheme inspiration online",
+    "output" : '{"activate_task": "yes"}'
     },
-    {
-        "input": "Grocery shopping for the week needs to be done",
-        "output": {
-            "task": "Buy groceries for the week",
-            "time": "30 minutes",
-            "task_history": {
-                "Make a shopping list": "10 minutes",
-                "Drive to grocery store": "5 minutes",
-                "Shop for items": "10 minutes",
-                "Return home and unpack": "5 minutes"
-            }
-        }
-    },
-    {
-        "input": "The plumber needs to be called about the kitchen sink",
-        "output": {
-            "time": "30 minutes",
-            "task_history": {
-                "Call plumber about kitchen sink",
-                "Find plumber's contact info",
-                "Call and explain the issue",
-                "Schedule appointment"
-            }
-        }
+    {"input" : (
+        ("user", "I need to create a website for my small business"),
+        ("assistant", """Creating a website is a fantastic way to promote your business! \n
+        Let's start by identifying what's most important for your website. Is it the design, the content, the functionality, or something else?"""),
+        ("user", "The design is the most important"),
+        ("assistant", """Design plays a crucial role in attracting and retaining visitors. \n
+        Do you have any specific ideas or themes in mind for the design, or would you like some help with inspiration?"""),
+        ("user", "I need help with design inspiration"),
+        ("assistant", """No problem! \n
+        Are there any websites that you admire or would like to take inspiration from? If so, what do you like about them?"""),
+        ("user", "I like websites that are clean and minimalist"),
+        ("assistant", """Clean and minimalist designs are very popular and effective. \n
+        The next step is to gather some examples of such designs. Do you want to search for design inspiration online, or do you have any sources you typically refer to?"""),
+        ("user", "I need to search for design inspiration online")
+    ),
+    "task" : "Search for minimalist website design inspiration online",
+    "output" : '{"activate_task": "yes"}'
     },
 ]
 
-
-
 example_prompt = ChatPromptTemplate.from_messages(
     [
-        ("assistant", "{output}"),
         ("user", "{input}"),
+        ("assistant", "{output}"),
+    ]
+)
+
+example_activate_prompt = ChatPromptTemplate.from_messages(
+    [
+        MessagesPlaceholder("input"),
+        ("system", "This is the task: {task}"),
+        ("assistant", "{output}"),
     ]
 )
 
@@ -137,4 +160,9 @@ model_shot_prompt = FewShotChatMessagePromptTemplate(
 time_shot_prompt = FewShotChatMessagePromptTemplate(
     example_prompt=example_prompt,
     examples=examples_time_task,
+)
+
+activate_shot_prompt = FewShotChatMessagePromptTemplate (
+    example_prompt=example_activate_prompt,
+    examples=examples_activate_task,
 )
