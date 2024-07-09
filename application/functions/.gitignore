@@ -3,3 +3,4 @@ venv
 secret.json
 *.log
 .env*
+__pychache__/
