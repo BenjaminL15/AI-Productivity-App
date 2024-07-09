@@ -9,13 +9,14 @@ from langchain.output_parsers.openai_tools import JsonOutputToolsParser
 from langchain_core.pydantic_v1 import BaseModel, Field
 from base_chains import ChatGroqSingleton
 from create_task import create_task
-from examples import model_shot_prompt, activate_shot_prompt
+from examples import model_shot_prompt, activate_shot_prompt, time_shot_prompt
 
 
 ASSIGN_TOOLS = "Assigning the tools"
 RESPONSE = "Producing the response"
 TASK_CALL_CONDITIONAL = "Decide if we want to create a task"
 ACTIVATE_TASK_CONDITIONAL = "Decide if we want to activate a task"
+TIME_TASK_CONDITIONAL = "Determine if the task is activated"
 
 class GenerativeUIState(TypedDict, total=False):
     input: List[tuple]
@@ -28,6 +29,9 @@ class GenerativeUIState(TypedDict, total=False):
 
 class DecideTaskCreation(BaseModel):
     create_task: str = Field(description= "decide whether or not to create a task")
+
+class TimeTaskCreation(BaseModel):
+    time_task: int = Field(description="The estimated time needed to complete the task in minutes")
 
 def create_task_conditional(state: GenerativeUIState, config: RunnableConfig) -> GenerativeUIState:
     print("CREATE TASK")
@@ -142,6 +146,48 @@ def activate_task(state: GenerativeUIState, config: RunnableConfig) -> str:
         return {"tool_calls": {"activate_task"}}
     print(f"no tool call made: {result}")
 
+def time_task_or_respond(state: GenerativeUIState) -> str:
+    print("TIME CONDITIONAL EDGE")
+    if state["tool_calls"] and "activate_task" in state["tool_calls"]:
+        return TIME_TASK_CONDITIONAL
+    else:
+        return RESPONSE
+    
+def time_duration(state: GenerativeUIState, config: RunnableConfig) -> str:
+    print("we are at time duration")
+    parser = JsonOutputParser(pydantic_object=TimeTaskCreation)
+
+    TIME_TASK_CONDITIONAL_PROMPT = ChatPromptTemplate.from_messages(
+        [
+            (
+                "system",
+                """
+                You are an expert at determining the duration of the tasks given. 
+                If a task has been determined as an activated task, then Respond by giving the user
+                the estimated time taken to complete the task. 
+
+                The response must be in the form of a JSON object with the key 'time'.
+                The value should be an integer that is in minutes and within a 60 minute time frame.
+
+                the content of the message should ONLY include the JSON object. Do not include any additional text in the response.
+                """
+            ),
+            time_shot_prompt,
+            MessagesPlaceholder("input"),
+        ]
+    )
+
+    model = ChatGroqSingleton().get_llm()
+    chain = TIME_TASK_CONDITIONAL_PROMPT | model | parser
+    result = chain.invoke({"input": state["input"], "task": state["tasks"][-1]}, config)
+    print(f"TIME_TASK result: {result}")
+
+    if not isinstance(result, dict):
+        raise ValueError("Invalid result from model. Expected AIMessage.")
+    
+    if result["time"] <= 60 and  result["time"] > 0:
+        return {"tool_calls": {"time"}}
+    print(f"no tool call made: {result}")
 
 def produce_response(state: GenerativeUIState, config: RunnableConfig) -> str:
     print("we are at the produce response")
@@ -183,8 +229,10 @@ def create_graph() -> CompiledGraph:
     workflow.add_node(ASSIGN_TOOLS, invoke_tools)
     workflow.add_node(RESPONSE, produce_response) # adding the response 
     workflow.add_node(ACTIVATE_TASK_CONDITIONAL, activate_task)
+    workflow.add_node(TIME_TASK_CONDITIONAL, time_duration)
     workflow.add_edge(TASK_CALL_CONDITIONAL, ASSIGN_TOOLS)
     workflow.add_conditional_edges(ASSIGN_TOOLS, activate_task_or_respond) # If no tools assigned, it will just return a default text
+    workflow.add_conditional_edges(ACTIVATE_TASK_CONDITIONAL, time_task_or_respond)
     workflow.add_edge(ACTIVATE_TASK_CONDITIONAL, RESPONSE)
     # workflow.add_conditional_edges(MODEL_CALL, invoke_tools_or_respond) # If no tools assigned, it will just return a default text
     # workflow.add_edge(ASSIGN_TOOLS, RESPONSE)
