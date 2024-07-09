@@ -9,7 +9,7 @@ from langchain.output_parsers.openai_tools import JsonOutputToolsParser
 from langchain_core.pydantic_v1 import BaseModel, Field
 from base_chains import ChatGroqSingleton
 from create_task import create_task
-from examples import model_shot_prompt
+from examples import model_shot_prompt, activate_task_examples
 
 
 
@@ -23,7 +23,7 @@ class GenerativeUIState(TypedDict, total=False):
     tasks: List[str]
     result: Optional[str]
     # parsed tool calls
-    tool_calls: Optional[List[str]]
+    tool_calls: Optional[set]
     # result of the tool calls
     tool_results: Optional[dict]
 
@@ -52,6 +52,8 @@ def create_task_conditional(state: GenerativeUIState, config: RunnableConfig) ->
                 The response should be in the form of a JSON object with the keys 'create_task'.
                 The value should be a binary score 'yes' or 'no' indicating whether or not to call the create_task tool.
 
+                the content of the message should ONLY include the JSON object. Do not include any additional text in the response.
+
                 Below is the "conversation history" will be provided:
                 """
             ),
@@ -67,7 +69,7 @@ def create_task_conditional(state: GenerativeUIState, config: RunnableConfig) ->
         raise ValueError("Invalid result from model. Expected AIMessage.")
     
     if result["create_task"] == "yes":
-        return {"tool_calls": ["create_task"]}
+        return {"tool_calls": {"create_task"}}
     print(f"no tool call made: {result}")
 
 def invoke_tools(state: GenerativeUIState, config: RunnableConfig) -> GenerativeUIState:
@@ -88,7 +90,7 @@ def invoke_tools(state: GenerativeUIState, config: RunnableConfig) -> Generative
         selected_tool = tools_map[tool_call]
         tool_results.append(selected_tool.invoke({"input":state["input"]}))
     print(tool_results)
-    return {"tool_results": tool_results, "tasks": [tool_results[0].description]}
+    return {"tool_results": {tool_call: tool_results[0].description}, "tasks": state["tasks"] + [tool_results[0].description]}
 
 def activate_task_or_respond(state: GenerativeUIState) -> str:
     print("CONDITIONAL EDGE")
@@ -97,11 +99,52 @@ def activate_task_or_respond(state: GenerativeUIState) -> str:
     else:
         return RESPONSE
     
-def activate_task(state: GenerativeUIState) -> str:
+def activate_task(state: GenerativeUIState, config: RunnableConfig) -> str:
     print("ACTIVATE TASK")
+    parser = JsonOutputParser(pydantic_object=DecideTaskCreation)
+
+    CREATE_TASK_CONDITIONAL_PROMPT = ChatPromptTemplate.from_messages(
+        [
+            (
+                "system",
+                """
+                You are an expert conversation analyst. 
+                A task has been created and now we must decide if the user should take immediate action by committing to the task or not.
+                The user should only commit to the task if they are ready to take action on it immediately and it has been broken down to a very simple and quick action.
+
+                If any of the below conditions are met do NOT call create_task tool:
+                - task is very broad and the goal is unclear
+                - user is working out the details of current task
+
+                here is the "task": {task}
+
+                The response should be in the form of a JSON object with the keys 'activate_task'.
+                The value should be a binary score 'yes' or 'no' indicating whether or not the user should act on the task.
+
+                Below is the "conversation history" will be provided:
+                """
+            ),
+            activate_task_examples,
+            MessagesPlaceholder("input")
+        ]
+    )
+    model = ChatGroqSingleton().get_llm()
+    chain = CREATE_TASK_CONDITIONAL_PROMPT | model | parser
+    result = chain.invoke({"messages": state["input"], "task": state["tasks"][-1]}, config)
+    print(f"ACTIVATE_TASK result: {result}")
+    if not isinstance(result, dict):
+        raise ValueError("Invalid result from model. Expected AIMessage.")
+    
+    if result["activate_task"] == "yes":
+        return {"tool_results": {"activate_task": result["activate_task"]}}
+    print(f"no tool call made: {result}")
+
 
 def produce_response(state: GenerativeUIState, config: RunnableConfig) -> str:
     print("we are at the produce response")
+
+    if "tool_results" in state and "activate_task" in state["tool_results"] and state["tool_results"]["activate_task"] == "yes:
+        return {"input" : [("assistant", state["tool_results"][0].description)]}
 
     RESPONSE_PROMPT = ChatPromptTemplate.from_messages(
         [

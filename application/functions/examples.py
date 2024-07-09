@@ -116,7 +116,6 @@ examples_time_task = [
 ]
 
 
-
 example_prompt = ChatPromptTemplate.from_messages(
     [
         ("assistant", "{output}"),

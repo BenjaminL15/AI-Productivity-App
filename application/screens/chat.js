@@ -60,7 +60,7 @@ const ChatScreen = ({ firebaseApp }) => {
             console.log(messages);
             // Add the bot's response to the messages
             setMessages((prevMessages) => [newBotMessage, ...prevMessages]);
-            setTasks((prevTasks) => [...prevTasks, result.data.tasks]);
+            setTasks(result.data.tasks);
             console.log(tasks);
             if (result.data.response.toLowerCase().includes('task')) {
               setTaskTime('5:00');
