@@ -15,7 +15,8 @@ from examples import model_shot_prompt
 
 ASSIGN_TOOLS = "Assigning the tools"
 RESPONSE = "Producing the response"
-MODEL_CALL = "Calling the model"
+TASK_CALL_CONDITIONAL = "Decide if we want to create a task"
+ACTIVATE_TASK_CONDITIONAL = "Decide if we want to activate a task"
 
 class GenerativeUIState(TypedDict, total=False):
     input: List[tuple]
@@ -29,32 +30,8 @@ class GenerativeUIState(TypedDict, total=False):
 class DecideTaskCreation(BaseModel):
     create_task: str = Field(description= "decide whether or not to create a task")
 
-
-def produce_response(state: GenerativeUIState, config: RunnableConfig) -> str:
-    print("we are at the produce response")
-
-    RESPONSE_PROMPT = ChatPromptTemplate.from_messages(
-        [
-            (
-                "system",
-                "You are a helpful assistant that guides users in breaking down tasks.\
-                 You make users feel heard while prompting them to think about their\
-                 task and how it can be reduced or if they have already made progress\
-                 towards said task. Keep reducing tasks until they can be completed\
-                 within a couple of minutes. Make the user feel as little overwhelmed\
-                 as possible. Ask one thing at a time to help pin point a first task\
-                 that can be completed. Be concise."
-            ),   
-        ] + state["input"]
-    )
-    model = ChatGroqSingleton().get_llm()
-    chain = RESPONSE_PROMPT | model | StrOutputParser()
-    result = chain.invoke(config)
-    print("we are at the end of produce response")
-    return {"input" : [("assistant", result)] }
-
-def invoke_model(state: GenerativeUIState, config: RunnableConfig) -> GenerativeUIState:
-    print("We are at invoke_model")
+def create_task_conditional(state: GenerativeUIState, config: RunnableConfig) -> GenerativeUIState:
+    print("CREATE TASK")
     parser = JsonOutputParser(pydantic_object=DecideTaskCreation)
 
     CREATE_TASK_CONDITIONAL_PROMPT = ChatPromptTemplate.from_messages(
@@ -113,24 +90,39 @@ def invoke_tools(state: GenerativeUIState, config: RunnableConfig) -> Generative
     print(tool_results)
     return {"tool_results": tool_results, "tasks": [tool_results[0].description]}
 
+def activate_task_or_respond(state: GenerativeUIState) -> str:
+    print("CONDITIONAL EDGE")
+    if "tool_calls" in state and isinstance(state["tool_calls"], list):
+        return ACTIVATE_TASK_CONDITIONAL
+    else:
+        return RESPONSE
+    
+def activate_task(state: GenerativeUIState) -> str:
+    print("ACTIVATE TASK")
 
+def produce_response(state: GenerativeUIState, config: RunnableConfig) -> str:
+    print("we are at the produce response")
 
+    RESPONSE_PROMPT = ChatPromptTemplate.from_messages(
+        [
+            (
+                "system",
+                "You are a helpful assistant that guides users in breaking down tasks.\
+                 You make users feel heard while prompting them to think about their\
+                 task and how it can be reduced or if they have already made progress\
+                 towards said task. Keep reducing tasks until they can be completed\
+                 within a couple of minutes. Make the user feel as little overwhelmed\
+                 as possible. Ask one thing at a time to help pin point a first task\
+                 that can be completed. Be concise."
+            ),   
+        ] + state["input"]
+    )
+    model = ChatGroqSingleton().get_llm()
+    chain = RESPONSE_PROMPT | model | StrOutputParser()
+    result = chain.invoke(config)
+    print("we are at the end of produce response")
+    return {"input" : [("assistant", result)] }
 
-    # print("We are at invoke_tools")
-    # create_test = create_task(str(state["input"]))
-    # print(f"Create_task results : {create_test}")
-    # return {"tool_result": [create_test]}
-
-    # tools_map = {
-    #     "activate-task": create_actionable_task
-    # }
-
-    # if state["tool_calls"] is not None:
-    #     # tool = state["tool_calls"][0]
-    #     # selected_tool = tools_map[tool["type"]]
-    #     print("We reached the invoke tools end of if statement")
-    # else:
-    #     raise ValueError("No tool calls found in state.")
 
 def create_graph() -> CompiledGraph:
     print("We are in create graph")
@@ -139,14 +131,16 @@ def create_graph() -> CompiledGraph:
 
     # workflow.add_node(MODEL_CALL, invoke_model) # This part calls the AI and it will decide what to respond with
     # workflow.add_node(ASSIGN_TOOLS, invoke_tools) # This basically assigns and calls the tools that the AI is assigned to or return plain text
-    workflow.add_node(MODEL_CALL, invoke_model)
+    workflow.add_node(TASK_CALL_CONDITIONAL, create_task_conditional)
     workflow.add_node(ASSIGN_TOOLS, invoke_tools)
     workflow.add_node(RESPONSE, produce_response) # adding the response 
-    workflow.add_edge(MODEL_CALL, ASSIGN_TOOLS)
-    workflow.add_edge(ASSIGN_TOOLS, RESPONSE)
+    workflow.add_node(ACTIVATE_TASK_CONDITIONAL, activate_task)
+    workflow.add_edge(TASK_CALL_CONDITIONAL, ASSIGN_TOOLS)
+    workflow.add_conditional_edges(ASSIGN_TOOLS, activate_task_or_respond) # If no tools assigned, it will just return a default text
+    workflow.add_edge(ACTIVATE_TASK_CONDITIONAL, RESPONSE)
     # workflow.add_conditional_edges(MODEL_CALL, invoke_tools_or_respond) # If no tools assigned, it will just return a default text
     # workflow.add_edge(ASSIGN_TOOLS, RESPONSE)
-    workflow.set_entry_point(MODEL_CALL) # starting point is the calling the model
+    workflow.set_entry_point(TASK_CALL_CONDITIONAL) # starting point is the calling the model
     workflow.set_finish_point(RESPONSE) # end point is assigning and calling the tools or the END point which is the text response 
 
     graph = workflow.compile()

@@ -11,7 +11,7 @@ from examples import time_shot_prompt
 class RecentMessages(BaseModel):
     input: List[tuple] = Field(..., description="provide recent messages between the user and ai assistant")
 class Task(BaseModel):
-    time: int = Field(..., description="The exact time needed to complete the task")
+    time: int = Field(..., description="The estimated time needed to complete the task in minutes")
 
 @tool("time_task", args_schema=RecentMessages, return_direct=True)
 def time_task(input: List[tuple]):
