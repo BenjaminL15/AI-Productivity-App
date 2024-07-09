@@ -8,6 +8,7 @@ from langchain_core.messages import AIMessage, HumanMessage
 from langchain.output_parsers.openai_tools import JsonOutputToolsParser
 from base_chains import ChatGroqSingleton
 from create_task import create_task
+from examples import model_shot_prompt
 
 
 
@@ -72,7 +73,8 @@ def invoke_model(state: GenerativeUIState, config: RunnableConfig) -> Generative
 
                 Below is the "conversation history" will be provided:
                 """
-            ),   
+            ),
+            model_shot_prompt,
             MessagesPlaceholder("input")
         ]
     )
