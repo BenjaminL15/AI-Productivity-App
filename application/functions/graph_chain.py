@@ -28,6 +28,10 @@ class GenerativeUIState(TypedDict, total=False):
 
 class DecideTaskCreation(BaseModel):
     create_task: str = Field(description= "decide whether or not to create a task")
+class ActivateTask(BaseModel):
+    activate_task: str = Field(description= "binary 'yes' or 'no' decsion whether or not to activate a task")
+    confidence: float = Field(description= "confidence in the decision")
+    reasoning: str = Field(description= "reasoning behind the decision")
 
 def create_task_conditional(state: GenerativeUIState, config: RunnableConfig) -> GenerativeUIState:
     print("CREATE TASK")
@@ -100,31 +104,42 @@ def activate_task_or_respond(state: GenerativeUIState) -> str:
     
 def activate_task(state: GenerativeUIState, config: RunnableConfig) -> str:
     print("ACTIVATE TASK")
-    parser = JsonOutputParser(pydantic_object=DecideTaskCreation)
+    parser = JsonOutputParser(pydantic_object=ActivateTask)
 
-    CREATE_TASK_CONDITIONAL_PROMPT = ChatPromptTemplate.from_messages(
+    ACTIVATE_TASK_CONDITIONAL_PROMPT = ChatPromptTemplate.from_messages(
         [
             activate_shot_prompt,
             (
                 "system",
                 """
-                You are an expert conversation analyst. 
-                A task has been created and now we must decide if the task has been broken down to a very simple task. 
-                If the task is sufficently simple, quick, and specific then the task should activate.
-                The user should only commit to the task if they are ready to take action on it immediately and it has been broken down to a very simple and quick action.
+                You are an expert conversation analyst tasked with determining if a given task has been sufficiently broken down and is ready for immediate action.
 
-                If any of the below conditions are met do NOT activate the task:
-                - task is very broad and the goal is unclear
-                - user is working out the details of current task
-                - the task can not be completed within a timely manner
-                - the task can be simplified further
+                Analyze the entire conversation history provided to understand the context of the task.
 
-                The response must be in the form of a JSON object with the key 'activate_task'.
-                The value should be a binary score 'yes' or 'no' indicating whether or not the user should act on the task.
+                Evaluate the task against the following criteria:
+                1. Specificity: Is the task clearly defined with no ambiguity?
+                2. Immediacy: Can the user start working on this task right away?
+                3. Timeframe: Can the task be completed in a short amount of time (ideally within an hour)?
+                4. Simplicity: Does the task require no further planning or decision-making?
+                5. Focus: Is this a single, focused action rather than a multi-step process?
 
-                the content of the message should ONLY include the JSON object. Do not include any additional text in the response.
+                If the task meets all or most of these criteria, it should be activated. If it fails to meet multiple criteria, it should not be activated.
 
-                Below is the "conversation history" will be provided for additonal context:
+                Common reasons NOT to activate a task include:
+                - The task is too broad or the goal is unclear
+                - The user is still working out details or planning
+                - The task requires significant time or resources to complete
+                - The task can be broken down further into simpler steps
+                - The task requires additional information or resources before it can be started
+
+                Based on your analysis, provide a JSON response with the following structure:
+
+                activate_task: <"yes" or "no">,
+                confidence: <a number between 0 and 1>,
+                reasoning: <A brief explanation of your decision>
+
+
+                Only include this JSON object in your response, with no additional text.
                 """
             ),
             ("system", "Here is the conversation between the user and the assistant: {input}"),
@@ -132,7 +147,7 @@ def activate_task(state: GenerativeUIState, config: RunnableConfig) -> str:
         ]
     )
     model = ChatGroqSingleton().get_llm()
-    chain = CREATE_TASK_CONDITIONAL_PROMPT | model | parser
+    chain = ACTIVATE_TASK_CONDITIONAL_PROMPT | model | parser
     result = chain.invoke({"input": state["input"], "task": state["tasks"][-1]}, config)
     print(f"ACTIVATE_TASK result: {result}")
     if not isinstance(result, dict):
