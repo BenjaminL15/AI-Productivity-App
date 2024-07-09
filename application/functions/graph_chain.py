@@ -136,6 +136,8 @@ def activate_task(state: GenerativeUIState, config: RunnableConfig) -> str:
                 - The task can be broken down further into simpler steps
                 - The task requires additional information or resources before it can be started
 
+                Be extra critical when evaluating as only the most simple and actionable tasks should be activated.
+                
                 Based on your analysis, provide a JSON response with the following structure:
 
                 activate_task: <"yes" or "no">,
