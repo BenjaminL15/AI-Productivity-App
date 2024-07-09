@@ -156,8 +156,8 @@ example_prompt = ChatPromptTemplate.from_messages(
 
 example_activate_prompt = ChatPromptTemplate.from_messages(
     [
-        MessagesPlaceholder("input"),
-        ("system", "This is the task: {task}"),
+        ("system", "Here is the conversation between the user and the assistant: {input}"),
+        ("system", "task created: {task}\n should task be activated?"),
         ("assistant", "{output}"),
     ]
 )

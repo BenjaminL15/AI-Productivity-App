@@ -26,7 +26,10 @@ def create_task(input: str):
                 task in a very concise and clear way that excludes specific details.\n
                 The users most recent response is the most important while all other messages from the user and the ai should just be used for context.
                 In case there is no clear immediate task that has been agreed upon then set task to none.\n
-                The response should be in the form of a JSON object with the keys 'description'""",
+                The response should be in the form of a JSON object with the keys 'description'
+                
+                the content of the message should ONLY include the JSON object. Do not include any additional text in the response.
+                """,
             ),
             create_shot_prompt,
             MessagesPlaceholder("input")

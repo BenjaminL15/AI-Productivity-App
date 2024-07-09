@@ -69,10 +69,9 @@ def create_task_conditional(state: GenerativeUIState, config: RunnableConfig) ->
     
     if result["create_task"] == "yes":
         return {"tool_calls": {"create_task"}}
-    print(f"no tool call made: {result}")
 
 def invoke_tools(state: GenerativeUIState, config: RunnableConfig) -> GenerativeUIState:
-    print(f"post state tool calls: {state['tool_calls']}")
+    print(f"INVOKE TOOLS: {state['tool_calls']}")
 
     tool_results = []
     tools_map = {
@@ -88,10 +87,11 @@ def invoke_tools(state: GenerativeUIState, config: RunnableConfig) -> Generative
         print(f"inside the loop state['input'] type is: {type(state['input'])}")
         selected_tool = tools_map[tool_call]
         tool_results.append(selected_tool.invoke({"input":state["input"]}))
-    print(tool_results)
+    print(f"TOOL RESULTS from invoke: {tool_results}")
     return {"tool_results": {tool_call: tool_results[0].description}, "tasks": state["tasks"] + [tool_results[0].description]}
 
 def activate_task_or_respond(state: GenerativeUIState) -> str:
+    print(f"TASK LIST: {state['tasks']}, typing: {type(state['tasks'])}")
     print("CONDITIONAL EDGE")
     if "tool_calls" in state and isinstance(state["tool_calls"], set):
         return ACTIVATE_TASK_CONDITIONAL
@@ -104,12 +104,13 @@ def activate_task(state: GenerativeUIState, config: RunnableConfig) -> str:
 
     CREATE_TASK_CONDITIONAL_PROMPT = ChatPromptTemplate.from_messages(
         [
+            activate_shot_prompt,
             (
                 "system",
                 """
                 You are an expert conversation analyst. 
                 A task has been created and now we must decide if the task has been broken down to a very simple task. 
-                If the task has been sufficently simple, quick, and specific then the task should activate.
+                If the task is sufficently simple, quick, and specific then the task should activate.
                 The user should only commit to the task if they are ready to take action on it immediately and it has been broken down to a very simple and quick action.
 
                 If any of the below conditions are met do NOT activate the task:
@@ -118,9 +119,7 @@ def activate_task(state: GenerativeUIState, config: RunnableConfig) -> str:
                 - the task can not be completed within a timely manner
                 - the task can be simplified further
 
-                here is the "task": {task}
-
-                The response should be in the form of a JSON object with the keys 'activate_task'.
+                The response must be in the form of a JSON object with the key 'activate_task'.
                 The value should be a binary score 'yes' or 'no' indicating whether or not the user should act on the task.
 
                 the content of the message should ONLY include the JSON object. Do not include any additional text in the response.
@@ -128,8 +127,8 @@ def activate_task(state: GenerativeUIState, config: RunnableConfig) -> str:
                 Below is the "conversation history" will be provided for additonal context:
                 """
             ),
-            activate_shot_prompt,
-            MessagesPlaceholder("input")
+            ("system", "Here is the conversation between the user and the assistant: {input}"),
+            ("system", "task created: {task}\n should task be activated?")
         ]
     )
     model = ChatGroqSingleton().get_llm()
@@ -147,7 +146,7 @@ def activate_task(state: GenerativeUIState, config: RunnableConfig) -> str:
 def produce_response(state: GenerativeUIState, config: RunnableConfig) -> str:
     print("we are at the produce response")
 
-    if "tool_calls" in state and "activate_task" in state["tool_calls"]:
+    if state["tool_calls"] and "activate_task" in state["tool_calls"]:
         print("inside the if statement")
         state["input"].append(("system", f"prompt the user to commit to the task: {state['tasks'][-1]}"))
         print(f"CHECK if activate task is appeneded: {state['input']}")

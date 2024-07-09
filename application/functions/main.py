@@ -33,16 +33,14 @@ def format_chat_history(raw_chat: List[Dict], input: str) -> List[tuple]:
 def test(req: https_fn.CallableRequest) -> https_fn.Response:
     """Saves a message to the Firebase Realtime Database but sanitizes the text
     by removing swear words."""
-    print("We are in test")
     data = req.data
     chat_history: List[Dict] = data['messages']
     task_history: List[str] = data['tasks']
+    print(f"task passed in: {task_history}")
     input = data['inputText']
     graph = create_graph()
     messages_for_prompt = format_chat_history(chat_history, input)
-    print("We reached the end of this")
     ret = graph.invoke({"input" : messages_for_prompt, "tasks": task_history})
-    print("We reached the invoke")
     
-    print(ret)
+    print(f"GRAPH CHAIN result: {ret}")
     return {"response": ret["input"][-1][1], "tasks": ret["tasks"]}
