@@ -34,7 +34,7 @@ def create_task(input: str):
     )
 
     model = ChatGroqSingleton().get_llm()
-    stuctered_model = model.with_structured_output(Task, method="json_mode")
+    stuctered_model = model.with_structured_output(Task)
     chain = task_template | stuctered_model
     result = chain.invoke({"input" : input})
 

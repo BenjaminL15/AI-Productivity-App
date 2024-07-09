@@ -5,14 +5,14 @@ from langchain_core.prompts import (
 )
 
 examples_create_task = [
-    {"input": "I need to plan a party for my sister", "output": "Plan party for sister"},
-    {"input": "My goal is to figure out what I should write in my email to my professor", "output" : "Create guest list for the party"},
-    {"input": "Im trying to organize my notes for my exam", "output" : "Organizing notes for exam"},
-    {"input": "I have to finish the presentation slides for the meeting", "output": "Finish presentation slides for meeting"},
-    {"input": "My project team needs to discuss our final report", "output": "Discuss final report with project team"},
-    {"input": "The plumber needs to be called about the kitchen sink", "output": "Call plumber about kitchen sink"},
-    {"input": "Grocery shopping for the week needs to be done", "output": "Buy groceries for the week"},
-    {"input": "Write a thank you note to express gratitude to a friend", "output": "Write thank you note to friend"},
+    {"input": "I need to plan a party for my sister", "output": '{"description": "Plan party for sister"}'},
+    {"input": "My goal is to figure out what I should write in my email to my professor", "output": '{"description": "Create guest list for the party"}'},
+    {"input": "Im trying to organize my notes for my exam", "output": '{"description": "Organizing notes for exam"}'},
+    {"input": "I have to finish the presentation slides for the meeting", "output": '{"description": "Finish presentation slides for meeting"}'},
+    {"input": "My project team needs to discuss our final report", "output": '{"description": "Discuss final report with project team"}'},
+    {"input": "The plumber needs to be called about the kitchen sink", "output": '{"description": "Call plumber about kitchen sink"}'},
+    {"input": "Grocery shopping for the week needs to be done", "output": '{"description": "Buy groceries for the week"}'},
+    {"input": "Write a thank you note to express gratitude to a friend", "output": '{"description": "Write thank you note to friend"}'},
 ]
 
 examples_invoke_model = [
@@ -57,7 +57,7 @@ examples_time_task = [
 ]
 
 examples_activate_task = [
-    {"input" : (
+    {"input" : [
             ("user", "I need to plan a party for my mom"),
             ("assistant", """planning a party for your mom can be a big task! Let's break it down together. \n
             To get started, can you tell me what's the most important thing to you about this party? Is it the guest list, the theme, the food, or something else?"""),
@@ -71,12 +71,12 @@ examples_activate_task = [
             ("assistant", """Ordering from a catering service can save you a lot of time and effort. \n
             What's the next step you need to take to order from a catering service? Do you need to research and find a service, or do you already have one in mind?"""),
             ("user", "I dont know what catering service to call")
-        ),
+    ],
     "task" : "Research catering services",
     "output" : '{"activate_task": "yes"}'
     },
 
-    {"input" : (
+    {"input" : [
         ("user", "I need to study for an exam"),
         ("assistant", """Studying for an exam can feel overwhelming! \n 
         Let's break it down together> What's the first thing that comes to mind when you think about studying for this exam? Is it a specific topic, chapter, or concept that you need to focus on?"""),
@@ -87,11 +87,11 @@ examples_activate_task = [
         ("assistant", """Linked lists are a fundamental data structure! \n
         What's one specific aspect of linked lists that you'd like to review or feel uncertain about, such as inserting nodes, deleting nodes, or traversing the list?"""),
         ("user", "I need to organize my notes for Linked lists"),
-        ),
+    ],
     "task" : "Organize notes for linked lists",
     "output" : '{"activate_task": "yes"}'
     },
-    {"input" : (
+    {"input" : [
         ("user", "I need to redecorate my living room"),
         ("assistant", """Redecorating a living room is a great project! \n
         Let's break it down step by step. What is the most important aspect for you? Is it the furniture, the color scheme, the lighting, or something else?"""),
@@ -108,11 +108,11 @@ examples_activate_task = [
         ("assistant", """Great choice! \n
         The next step would be to look at some specific color palettes. Would you like to search for some inspiration online, or do you have any sources in mind?"""),
         ("user", "I need to search for inspiration online")
-        ),
+    ],
     "task" : "Search for color scheme inspiration online",
     "output" : '{"activate_task": "yes"}'
     },
-    {"input" : (
+    {"input" : [
         ("user", "I need to create a website for my small business"),
         ("assistant", """Creating a website is a fantastic way to promote your business! \n
         Let's start by identifying what's most important for your website. Is it the design, the content, the functionality, or something else?"""),
@@ -126,9 +126,24 @@ examples_activate_task = [
         ("assistant", """Clean and minimalist designs are very popular and effective. \n
         The next step is to gather some examples of such designs. Do you want to search for design inspiration online, or do you have any sources you typically refer to?"""),
         ("user", "I need to search for design inspiration online")
-    ),
+    ],
     "task" : "Search for minimalist website design inspiration online",
     "output" : '{"activate_task": "yes"}'
+    },
+    {"input" : [
+        ("user", "I need to file a loan for a house"),
+    ],
+    "task" : "file a loan for a house",
+    "output" : '{"activate_task": "no"}'
+    },
+    {"input" : [
+        ("user", "I wan't to learn how to swim"),
+        ("assistant", """Learning how to swim is a great goal! \n
+         Do you already have any current swimming experience?"""),
+        ("user", "I have no swimming experience. The first stroke I want to learn is freestyle"),
+    ],
+    "task" : "learn freestyle stroke",
+    "output" : '{"activate_task": "no"}'
     },
 ]
 

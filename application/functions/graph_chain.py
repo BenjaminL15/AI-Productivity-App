@@ -9,8 +9,7 @@ from langchain.output_parsers.openai_tools import JsonOutputToolsParser
 from langchain_core.pydantic_v1 import BaseModel, Field
 from base_chains import ChatGroqSingleton
 from create_task import create_task
-from examples import model_shot_prompt, activate_task_examples
-
+from examples import model_shot_prompt, activate_shot_prompt
 
 
 ASSIGN_TOOLS = "Assigning the tools"
@@ -94,7 +93,7 @@ def invoke_tools(state: GenerativeUIState, config: RunnableConfig) -> Generative
 
 def activate_task_or_respond(state: GenerativeUIState) -> str:
     print("CONDITIONAL EDGE")
-    if "tool_calls" in state and isinstance(state["tool_calls"], list):
+    if "tool_calls" in state and isinstance(state["tool_calls"], set):
         return ACTIVATE_TASK_CONDITIONAL
     else:
         return RESPONSE
@@ -109,42 +108,49 @@ def activate_task(state: GenerativeUIState, config: RunnableConfig) -> str:
                 "system",
                 """
                 You are an expert conversation analyst. 
-                A task has been created and now we must decide if the user should take immediate action by committing to the task or not.
+                A task has been created and now we must decide if the task has been broken down to a very simple task. 
+                If the task has been sufficently simple, quick, and specific then the task should activate.
                 The user should only commit to the task if they are ready to take action on it immediately and it has been broken down to a very simple and quick action.
 
-                If any of the below conditions are met do NOT call create_task tool:
+                If any of the below conditions are met do NOT activate the task:
                 - task is very broad and the goal is unclear
                 - user is working out the details of current task
+                - the task can not be completed within a timely manner
+                - the task can be simplified further
 
                 here is the "task": {task}
 
                 The response should be in the form of a JSON object with the keys 'activate_task'.
                 The value should be a binary score 'yes' or 'no' indicating whether or not the user should act on the task.
 
-                Below is the "conversation history" will be provided:
+                the content of the message should ONLY include the JSON object. Do not include any additional text in the response.
+
+                Below is the "conversation history" will be provided for additonal context:
                 """
             ),
-            activate_task_examples,
+            activate_shot_prompt,
             MessagesPlaceholder("input")
         ]
     )
     model = ChatGroqSingleton().get_llm()
     chain = CREATE_TASK_CONDITIONAL_PROMPT | model | parser
-    result = chain.invoke({"messages": state["input"], "task": state["tasks"][-1]}, config)
+    result = chain.invoke({"input": state["input"], "task": state["tasks"][-1]}, config)
     print(f"ACTIVATE_TASK result: {result}")
     if not isinstance(result, dict):
         raise ValueError("Invalid result from model. Expected AIMessage.")
     
     if result["activate_task"] == "yes":
-        return {"tool_results": {"activate_task": result["activate_task"]}}
+        return {"tool_calls": {"activate_task"}}
     print(f"no tool call made: {result}")
 
 
 def produce_response(state: GenerativeUIState, config: RunnableConfig) -> str:
     print("we are at the produce response")
 
-    if "tool_results" in state and "activate_task" in state["tool_results"] and state["tool_results"]["activate_task"] == "yes:
-        return {"input" : [("assistant", state["tool_results"][0].description)]}
+    if "tool_calls" in state and "activate_task" in state["tool_calls"]:
+        print("inside the if statement")
+        state["input"].append(("system", f"prompt the user to commit to the task: {state['tasks'][-1]}"))
+        print(f"CHECK if activate task is appeneded: {state['input']}")
 
     RESPONSE_PROMPT = ChatPromptTemplate.from_messages(
         [
