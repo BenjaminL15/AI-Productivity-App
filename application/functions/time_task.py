@@ -14,7 +14,7 @@ class Task(BaseModel):
     time: int = Field(..., description="The exact time needed to complete the task")
 
 @tool("time_task", args_schema=RecentMessages, return_direct=True)
-def time_task(input: str):
+def time_task(input: List[tuple]):
     """Determine the duration of a task that is within 60 minutes"""
         
     task_template = ChatPromptTemplate.from_messages(

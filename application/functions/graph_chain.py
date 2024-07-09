@@ -6,6 +6,7 @@ from langchain_core.output_parsers import StrOutputParser, JsonOutputParser
 from langchain_core.runnables  import RunnableConfig
 from langchain_core.messages import AIMessage, HumanMessage
 from langchain.output_parsers.openai_tools import JsonOutputToolsParser
+from langchain_core.pydantic_v1 import BaseModel, Field
 from base_chains import ChatGroqSingleton
 from create_task import create_task
 from examples import model_shot_prompt
@@ -24,6 +25,9 @@ class GenerativeUIState(TypedDict, total=False):
     tool_calls: Optional[List[str]]
     # result of the tool calls
     tool_results: Optional[dict]
+
+class DecideTaskCreation(BaseModel):
+    create_task: str = Field(description= "decide whether or not to create a task")
 
 
 def produce_response(state: GenerativeUIState, config: RunnableConfig) -> str:
@@ -51,7 +55,7 @@ def produce_response(state: GenerativeUIState, config: RunnableConfig) -> str:
 
 def invoke_model(state: GenerativeUIState, config: RunnableConfig) -> GenerativeUIState:
     print("We are at invoke_model")
-    tools_parser = JsonOutputToolsParser()
+    parser = JsonOutputParser(pydantic_object=DecideTaskCreation)
 
     CREATE_TASK_CONDITIONAL_PROMPT = ChatPromptTemplate.from_messages(
         [
@@ -79,7 +83,7 @@ def invoke_model(state: GenerativeUIState, config: RunnableConfig) -> Generative
         ]
     )
     model = ChatGroqSingleton().get_llm()
-    chain = CREATE_TASK_CONDITIONAL_PROMPT | model | JsonOutputParser()
+    chain = CREATE_TASK_CONDITIONAL_PROMPT | model | parser
     result = chain.invoke({"input": state["input"], "tasks": state["tasks"]}, config)
     print(f"INVOKE TOOL result: {result}, type is {type(result)}")
     if not isinstance(result, dict):
