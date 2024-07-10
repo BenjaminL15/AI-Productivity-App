@@ -49,11 +49,11 @@ examples_invoke_model = [
 ]
 
 examples_time_task = [
-    {"input": "I need to plan a party for my sister", "output": "20"},
-    {"input": "My goal is to figure out what I should write in my email to my professor", "output": "10"},
-    {"input": "I'm trying to organize my notes for my exam", "output": "15"},
-    {"input": "Grocery shopping for the week needs to be done", "output": "59"},
-    {"input": "The plumber needs to be called about the kitchen sink", "output": "30"},
+    {"input": "I need to plan a party for my sister", "output": '{"duration": 20}'},
+    {"input": "My goal is to figure out what I should write in my email to my professor", "output": '{"duration": 20}'},
+    {"input": "I'm trying to organize my notes for my exam", "output": '{"duration": 15}'},
+    {"input": "Grocery shopping for the week needs to be done", "output": '{"duration": 60}'},
+    {"input": "The plumber needs to be called about the kitchen sink", "output": '{"duration": 30}'},
 ]
 
 examples_activate_task = [
