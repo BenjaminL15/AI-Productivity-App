@@ -22,6 +22,7 @@ const ChatScreen = ({ firebaseApp }) => {
   const [showPicker, setShowPicker] = useState(false);
   const [formattedTime, setFormattedTime] = useState('');
   const [taskName, setTaskName] = useState('');
+  const [previousLastTask, setPreviousLastTask] = useState(null);
 
   const AVAILABLE_MINUTES = Array.from({ length: 60 }, (_, i) => String(i));
   const AVAILABLE_SECONDS = Array.from({ length: 60 }, (_, i) => String(i));
@@ -96,12 +97,18 @@ const ChatScreen = ({ firebaseApp }) => {
         console.log(description_result);
         console.log(time_result);
 
+        if (previousLastTask && JSON.stringify(previousLastTask) === JSON.stringify(lastTask)) {
+          console.log("The first item is still the same. Skipping function execution.");
+          return;
+        }
+
         if (active_result === true) {
           setTaskModalVisible(true);
           setFormattedTime(formatTime(time_result * 60));
           setTimer(time_result * 60);
           setTaskName(description_result);
         }
+        setPreviousLastTask(lastTask);
       }
     } catch (error) {
       console.error("Error in handleStartTask:", error);
@@ -187,7 +194,7 @@ const ChatScreen = ({ firebaseApp }) => {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.taskModalContainer}>
-            <Text style={styles.taskText}>{taskName}: Is this a resonable time to complete the task?</Text>
+            <Text style={styles.taskText}>Task: {taskName + '\n'} Is this a resonable time to complete the task?</Text>
             <View style={styles.timerContainer}>
               <Text style={styles.timerText}>{taskTime}</Text>
             </View>
@@ -369,6 +376,8 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#FFF',
     marginBottom: 20,
+    textAlign: 'center',
+    fontWeight: '500'
   },
   timerContainer: {
     backgroundColor: '#3E3E48',
