@@ -15,28 +15,33 @@ const ChatScreen = ({ firebaseApp }) => {
   const [inputText, setInputText] = useState('');
   const [isTaskModalVisible, setTaskModalVisible] = useState(false);
   const [isTimerModalVisible, setTimerModalVisible] = useState(false);
-  const [timer, setTimer] = useState(300);
+  const [timer, setTimer] = useState(null);
   const [taskTime, setTaskTime] = useState('');
   const [selectedMinutes, setSelectedMinutes] = useState('0');
-  const [selectedSeconds, setSelectedSeconds] = useState('5');
+  const [selectedSeconds, setSelectedSeconds] = useState('0');
   const [showPicker, setShowPicker] = useState(false);
+  const [formattedTime, setFormattedTime] = useState('');
 
   const AVAILABLE_MINUTES = Array.from({ length: 60 }, (_, i) => String(i));
   const AVAILABLE_SECONDS = Array.from({ length: 60 }, (_, i) => String(i));
 
   useEffect(() => {
-    if (isTimerModalVisible && timer > 0) {
-      Timer.setTimeout(this, 'timer', () => {
-        setTimer(timer - 1);
+    let timerInterval;
+    if (timer > 0 && isTimerModalVisible) {
+      timerInterval = setInterval(() => {
+        setTimer((prevTimer) => prevTimer - 1);
       }, 1000);
     } else if (timer === 0) {
+      clearInterval(timerInterval);
       setTimerModalVisible(false);
-      setTimer(5);
     }
-    return () => {
-      Timer.clearTimeout(this, 'timer');
-    };
+
+    return () => clearInterval(timerInterval);
   }, [timer, isTimerModalVisible]);
+
+  useEffect(() => {
+    setTaskTime(formatTime(timer));
+  }, [timer]);
 
   const handleSend = async () => {
     if (inputText.trim().length > 0) {
@@ -61,11 +66,8 @@ const ChatScreen = ({ firebaseApp }) => {
             // Add the bot's response to the messages
             setMessages((prevMessages) => [newBotMessage, ...prevMessages]);
             setTasks(result.data.tasks);
+            handleStartTask(result.data.tasks);
             console.log(tasks);
-            if (result.data.response.toLowerCase().includes('task')) {
-              setTaskTime('5:00');
-              setTaskModalVisible(true);
-            }
           });
       } catch (error) {
         console.error('Error calling Firebase function:', error);
@@ -81,14 +83,32 @@ const ChatScreen = ({ firebaseApp }) => {
     }
   };
 
+  const handleStartTask = (result) => {
+    try {
+      if (result.length != 0) {
+        const lastTask = result[result.length -1];
+        const description_result = lastTask.description 
+        const time_result = lastTask.duration
+        const active_result = lastTask.active
+    
+        console.log(active_result);
+        console.log(description_result);
+        console.log(time_result);
+
+        if (active_result === true) {
+          setTaskModalVisible(true);
+          setFormattedTime(formatTime(time_result * 60));
+          setTimer(time_result * 60);
+        }
+      }
+    } catch (error) {
+      console.error("Error in handleStartTask:", error);
+    }
+  };
+  
   const handleYes = () => {
     setTaskModalVisible(false);
     setTimerModalVisible(true);
-  };
-
-  const handleNo = () => {
-    setTaskModalVisible(false);
-    Alert.alert('Task declined.');
   };
 
   const handleMoreTime = () => {
@@ -229,9 +249,9 @@ const ChatScreen = ({ firebaseApp }) => {
         <View style={styles.modalOverlay}>
           <View style={styles.timerModalContainer}>
             <Text style={styles.modalText}>Task</Text>
-            <Text style={styles.modalTimer}>{formatTime(timer)}</Text>
+            <Text style={styles.modalTimer}>{taskTime}</Text>
             <View style={styles.buttonRow}>
-              <TouchableOpacity onPress={() => { setTimerModalVisible(false); Alert.alert('Task Finished.'); }} style={[styles.modalButton, styles.finishedButton]}>
+              <TouchableOpacity onPress={() => { setTimerModalVisible(false); Alert.alert("Task Finished")}} style={[styles.modalButton, styles.finishedButton]}>
                 <Text style={styles.buttonText}>Finished</Text>
               </TouchableOpacity>
             </View>
