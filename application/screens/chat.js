@@ -21,6 +21,7 @@ const ChatScreen = ({ firebaseApp }) => {
   const [selectedSeconds, setSelectedSeconds] = useState('0');
   const [showPicker, setShowPicker] = useState(false);
   const [formattedTime, setFormattedTime] = useState('');
+  const [taskName, setTaskName] = useState('');
 
   const AVAILABLE_MINUTES = Array.from({ length: 60 }, (_, i) => String(i));
   const AVAILABLE_SECONDS = Array.from({ length: 60 }, (_, i) => String(i));
@@ -99,6 +100,7 @@ const ChatScreen = ({ firebaseApp }) => {
           setTaskModalVisible(true);
           setFormattedTime(formatTime(time_result * 60));
           setTimer(time_result * 60);
+          setTaskName(description_result);
         }
       }
     } catch (error) {
@@ -185,7 +187,7 @@ const ChatScreen = ({ firebaseApp }) => {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.taskModalContainer}>
-            <Text style={styles.taskText}>Task Placeholder. Does the amount of time seem reasonable for completion?</Text>
+            <Text style={styles.taskText}>{taskName}: Is this a resonable time to complete the task?</Text>
             <View style={styles.timerContainer}>
               <Text style={styles.timerText}>{taskTime}</Text>
             </View>
