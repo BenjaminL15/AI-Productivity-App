@@ -23,6 +23,10 @@ const ChatScreen = ({ firebaseApp }) => {
   const [formattedTime, setFormattedTime] = useState('');
   const [taskName, setTaskName] = useState('');
   const [previousLastTask, setPreviousLastTask] = useState(null);
+  const [commitVisible, setCommitVisible] = useState(false);
+  const [latestAssistantMessageId, setLatestAssistantMessageId] = useState(null);
+  const [isCompletionModalVisible, setCompletionModalVisible] = useState(false);
+
 
   const AVAILABLE_MINUTES = Array.from({ length: 60 }, (_, i) => String(i));
   const AVAILABLE_SECONDS = Array.from({ length: 60 }, (_, i) => String(i));
@@ -36,6 +40,7 @@ const ChatScreen = ({ firebaseApp }) => {
     } else if (timer === 0) {
       clearInterval(timerInterval);
       setTimerModalVisible(false);
+      setCompletionModalVisible(true); 
     }
 
     return () => clearInterval(timerInterval);
@@ -69,6 +74,7 @@ const ChatScreen = ({ firebaseApp }) => {
             setMessages((prevMessages) => [newBotMessage, ...prevMessages]);
             setTasks(result.data.tasks);
             handleStartTask(result.data.tasks);
+            setLatestAssistantMessageId(newBotMessage.id);
             console.log(tasks);
           });
       } catch (error) {
@@ -103,10 +109,10 @@ const ChatScreen = ({ firebaseApp }) => {
         }
 
         if (active_result === true) {
-          setTaskModalVisible(true);
           setFormattedTime(formatTime(time_result * 60));
           setTimer(time_result * 60);
           setTaskName(description_result);
+          setCommitVisible(true);
         }
         setPreviousLastTask(lastTask);
       }
@@ -114,6 +120,16 @@ const ChatScreen = ({ firebaseApp }) => {
       console.error("Error in handleStartTask:", error);
     }
   };
+
+  const handleCommit = () => {
+    setTaskModalVisible(true);
+    setCommitVisible(false);
+  };
+
+  const handleDecline = () => {
+    setCommitVisible(false);
+  };
+
   
   const handleYes = () => {
     setTaskModalVisible(false);
@@ -128,6 +144,11 @@ const ChatScreen = ({ firebaseApp }) => {
     setShowPicker(false);
   };
 
+  const handleFinishButton = () => {
+    setCompletionModalVisible(true);
+    setTimerModalVisible(false); 
+  }
+
   const handlePickerConfirm = () => {
     setTaskModalVisible(false);
     setShowPicker(false);
@@ -138,9 +159,24 @@ const ChatScreen = ({ firebaseApp }) => {
     setTimer(totalSeconds);
   };
 
+  const renderCommitDeclineButtons = () => (
+    <View style={styles.commitContainer}>
+      <Text style={styles.commitText}>Would you like to commit to the task?</Text>
+      <View style={styles.buttonRow}>
+        <TouchableOpacity onPress={handleCommit} style={[styles.modalButton, styles.commitButton]}>
+          <Text style={styles.buttonText}>Accept</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={handleDecline} style={[styles.modalButton, styles.declineButton]}>
+          <Text style={styles.buttonText}>Decline</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
   const renderMessage = ({ item }) => (
     <View style={[styles.messageContainer, item.user === 'user' ? styles.userMessage : styles.aiMessage]}>
       <Text style={styles.messageText}>{item.text}</Text>
+      {item.user === 'assistant' && item.id === latestAssistantMessageId && commitVisible && renderCommitDeclineButtons()}
     </View>
   );
 
@@ -186,6 +222,7 @@ const ChatScreen = ({ firebaseApp }) => {
       </KeyboardAvoidingView>
       <Modal
         transparent={true}
+        animationType="fade"
         visible={isTaskModalVisible}
         onRequestClose={() => {
           Alert.alert('Modal has been closed.');
@@ -249,6 +286,7 @@ const ChatScreen = ({ firebaseApp }) => {
       </Modal>
       <Modal
         transparent={true}
+        animationType="fade"
         visible={isTimerModalVisible}
         onRequestClose={() => {
           Alert.alert('Modal has been closed.');
@@ -257,17 +295,35 @@ const ChatScreen = ({ firebaseApp }) => {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.timerModalContainer}>
-            <Text style={styles.modalText}>Task</Text>
+            <Text style={styles.modalText}>Task: {taskName}</Text>
             <Text style={styles.modalTimer}>{taskTime}</Text>
             <View style={styles.buttonRow}>
-              <TouchableOpacity onPress={() => { setTimerModalVisible(false); Alert.alert("Task Finished")}} style={[styles.modalButton, styles.finishedButton]}>
+              <TouchableOpacity onPress={handleFinishButton} style={[styles.modalButton, styles.finishedButton]}>
                 <Text style={styles.buttonText}>Finished</Text>
               </TouchableOpacity>
             </View>
           </View>
         </View>
       </Modal>
-    </View>
+      <Modal
+      visible={isCompletionModalVisible}
+      animationType="fade"
+      transparent={true}
+      onRequestClose={() => setCompletionModalVisible(false)}
+    >
+      <View style={styles.completionModalContainer}>
+        <View style={styles.completionModalContent}>
+          <Text style={styles.completionMessage}>Task: "{taskName}" has been completed!</Text>
+          <TouchableOpacity
+            onPress={() => setCompletionModalVisible(false)}
+            style={styles.closeButton}
+          >
+            <Text style={styles.buttonText}>Close</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+  </View>
   );
 };
 
@@ -450,6 +506,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#FFF',
     marginBottom: 20,
+    fontWeight: '600'
   },
   modalTimer: {
     fontSize: 24,
@@ -464,6 +521,51 @@ const styles = StyleSheet.create({
   cancelButton: {
     backgroundColor: '#EF4444', 
     marginRight: 10,
+  },
+  commitContainer: {
+    alignItems: 'center',
+    marginVertical: 10,
+  },
+  commitButton: {
+    backgroundColor: '#5E5CE6',
+    marginRight: 10,
+    marginTop: 10,
+  },
+  commitText: {
+    color: '#000',
+    fontSize: 15,
+  },
+  declineButton: {
+    backgroundColor: '#EF4444',
+    marginRight: 10,
+    marginTop: 10,
+  },
+  completionModalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  completionModalContent: {
+    width: '80%',
+    padding: 20,
+    backgroundColor: '#2B2B33',
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  completionMessage: {
+    color: '#ffff',
+    fontSize: 17,
+    marginBottom: 20,
+  },
+  closeButton: {
+    backgroundColor: '#44CF6C',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+  },
+  buttonText: {
+    color: '#ffff',
+    fontSize: 16,
   },
 });
 
