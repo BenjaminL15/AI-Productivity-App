@@ -194,7 +194,7 @@ const ChatScreen = ({ firebaseApp }) => {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.taskModalContainer}>
-            <Text style={styles.taskText}>Task: {taskName + '\n'} Is this a resonable time to complete the task?</Text>
+            <Text style={styles.taskText}>Task: {taskName + '\n\n'} Is this a resonable time to complete the task?</Text>
             <View style={styles.timerContainer}>
               <Text style={styles.timerText}>{taskTime}</Text>
             </View>
@@ -377,6 +377,7 @@ const styles = StyleSheet.create({
     color: '#FFF',
     marginBottom: 20,
     textAlign: 'center',
+    
     fontWeight: '500'
   },
   timerContainer: {
