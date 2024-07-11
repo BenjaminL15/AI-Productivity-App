@@ -47,6 +47,14 @@ const ChatScreen = ({ firebaseApp }) => {
   }, [timer, isTimerModalVisible]);
 
   useEffect(() => {
+    const lastMessage = messages[0]; 
+
+    if (lastMessage && lastMessage.user === 'assistant' && lastMessage.id !== latestAssistantMessageId) {
+      setCommitVisible(false);
+    }
+  }, [messages, latestAssistantMessageId]);
+
+  useEffect(() => {
     setTaskTime(formatTime(timer));
   }, [timer]);
 
