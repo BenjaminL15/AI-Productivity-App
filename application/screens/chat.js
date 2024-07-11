@@ -222,6 +222,7 @@ const ChatScreen = ({ firebaseApp }) => {
             placeholderTextColor="#fff"
             value={inputText}
             onChangeText={setInputText}
+            multiline={true} 
           />
           <TouchableOpacity onPress={handleSend} style={styles.sendButton}>
             <Text style={styles.sendButtonText}>Send</Text>
@@ -369,9 +370,10 @@ const styles = StyleSheet.create({
   },
 
   messageContainer: {
+    maxWidth: '80%',
     margin: 8,
     padding: 10,
-    borderRadius: 10,
+    borderRadius: 15,
   },
 
   userMessage: {
@@ -395,16 +397,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#212332',
     borderTopWidth: 1,
     borderTopColor: '#212332',
+    flexWrap: 'wrap',
   },
 
   input: {
-    flex: 3,
+    flex: 1,
     color: '#ffffff', 
     backgroundColor: '#2a2d3d',
     borderRadius: 20,
     paddingHorizontal: 15,
     paddingVertical: 10,
     fontSize: 16,
+    maxHeight: 150,
   },
 
   sendButton: {
@@ -532,7 +536,7 @@ const styles = StyleSheet.create({
   },
   commitContainer: {
     alignItems: 'center',
-    marginVertical: 10,
+    marginVertical: 5,
   },
   commitButton: {
     backgroundColor: '#5E5CE6',
@@ -542,6 +546,8 @@ const styles = StyleSheet.create({
   commitText: {
     color: '#000',
     fontSize: 15,
+    fontWeight: '600',
+    marginTop: 5,
   },
   declineButton: {
     backgroundColor: '#EF4444',
