@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList, KeyboardAvoidingView, Platform, Image, StatusBar, Modal, Alert } from 'react-native';
 import ChipIcon from '../constants/icon';
 import { getFunctions, httpsCallable } from "firebase/functions";
-import Timer from 'react-native-timer';
 import { Picker } from '@react-native-picker/picker';
 
 const chip = ChipIcon.chip;
