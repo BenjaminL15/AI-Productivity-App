@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList, Keyboard
 import ChipIcon from '../constants/icon';
 import { getFunctions, httpsCallable } from "firebase/functions";
 import { Picker } from '@react-native-picker/picker';
+import { Audio } from 'expo-av';
 
 const chip = ChipIcon.chip;
 
@@ -25,6 +26,7 @@ const ChatScreen = ({ firebaseApp }) => {
   const [commitVisible, setCommitVisible] = useState(false);
   const [latestAssistantMessageId, setLatestAssistantMessageId] = useState(null);
   const [isCompletionModalVisible, setCompletionModalVisible] = useState(false);
+  const [sound, setSound] = useState();
 
 
   const AVAILABLE_MINUTES = Array.from({ length: 60 }, (_, i) => String(i));
@@ -37,6 +39,7 @@ const ChatScreen = ({ firebaseApp }) => {
         setTimer((prevTimer) => prevTimer - 1);
       }, 1000);
     } else if (timer === 0) {
+      playSound();
       clearInterval(timerInterval);
       setTimerModalVisible(false);
       setCompletionModalVisible(true); 
@@ -56,6 +59,31 @@ const ChatScreen = ({ firebaseApp }) => {
   useEffect(() => {
     setTaskTime(formatTime(timer));
   }, [timer]);
+
+  async function playSound() {
+    const { sound: newSound } = await Audio.Sound.createAsync( require('../assets/alarmSound.mp3')
+    );
+    setSound(newSound);
+
+    await newSound.playAsync();
+  }
+
+  useEffect(() => {
+    return sound
+      ? () => {
+          sound.unloadAsync();
+        }
+      : undefined;
+  }, [sound]);
+
+  const stopSound = async () => {
+    if (sound) {
+      await sound.stopAsync();
+      await sound.unloadAsync();
+      setSound(null);
+    }
+  }
+
 
   const handleSend = async () => {
     if (inputText.trim().length > 0) {
@@ -132,11 +160,6 @@ const ChatScreen = ({ firebaseApp }) => {
     setTaskModalVisible(true);
     setCommitVisible(false);
   };
-
-  const handleDecline = () => {
-    setCommitVisible(false);
-  };
-
   
   const handleYes = () => {
     setTaskModalVisible(false);
@@ -156,6 +179,11 @@ const ChatScreen = ({ firebaseApp }) => {
     setTimerModalVisible(false); 
   }
 
+  const closeCompletionModal = () => {
+    stopSound();
+    setCompletionModalVisible(false);
+  };
+
   const handlePickerConfirm = () => {
     setTaskModalVisible(false);
     setShowPicker(false);
@@ -171,10 +199,7 @@ const ChatScreen = ({ firebaseApp }) => {
       <Text style={styles.commitText}>Would you like to commit to the task?</Text>
       <View style={styles.buttonRow}>
         <TouchableOpacity onPress={handleCommit} style={[styles.modalButton, styles.commitButton]}>
-          <Text style={styles.buttonText}>Accept</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={handleDecline} style={[styles.modalButton, styles.declineButton]}>
-          <Text style={styles.buttonText}>Decline</Text>
+          <Text style={styles.buttonText}>Let's go!</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -323,7 +348,7 @@ const ChatScreen = ({ firebaseApp }) => {
         <View style={styles.completionModalContent}>
           <Text style={styles.completionMessage}>Task: "{taskName}" has been completed!</Text>
           <TouchableOpacity
-            onPress={() => setCompletionModalVisible(false)}
+            onPress={closeCompletionModal}
             style={styles.closeButton}
           >
             <Text style={styles.buttonText}>Close</Text>
@@ -547,11 +572,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     marginTop: 5,
-  },
-  declineButton: {
-    backgroundColor: '#EF4444',
-    marginRight: 10,
-    marginTop: 10,
   },
   completionModalContainer: {
     flex: 1,
