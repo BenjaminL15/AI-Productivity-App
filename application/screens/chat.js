@@ -284,6 +284,7 @@ const ChatScreen = ({ firebaseApp }) => {
                       style={styles.picker}
                       selectedValue={selectedMinutes}
                       onValueChange={(itemValue) => setSelectedMinutes(itemValue)}
+                      itemStyle={styles.pickerItem}
                     >
                       {AVAILABLE_MINUTES.map((value) => (
                         <Picker.Item key={value} label={value} value={value} />
@@ -296,6 +297,7 @@ const ChatScreen = ({ firebaseApp }) => {
                       style={styles.picker}
                       selectedValue={selectedSeconds}
                       onValueChange={(itemValue) => setSelectedSeconds(itemValue)}
+                      itemStyle={styles.pickerItem}
                     >
                       {AVAILABLE_SECONDS.map((value) => (
                         <Picker.Item key={value} label={value} value={value} />
@@ -510,7 +512,7 @@ const styles = StyleSheet.create({
   pickerWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginHorizontal: 10,
+    marginHorizontal: -2,
   },
   buttonText: {
     fontSize: 16,
@@ -523,7 +525,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   picker: {
-    width: 80, 
+    width: Platform.OS === 'ios' ? 95 : 90, 
     color: '#FFF',
     marginBottom: 10, 
   },
@@ -599,6 +601,9 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#ffff',
     fontSize: 16,
+  },
+  pickerItem: {
+    color: '#FFF', 
   },
 });
 
